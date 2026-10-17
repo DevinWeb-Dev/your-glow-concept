@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-
 import {
   Link,
   useOutletContext,
@@ -12,52 +11,34 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock3,
-  Heart,
+  Layers3,
+  ShieldCheck,
   Sparkles,
   XCircle,
 } from "lucide-react";
 
 import {
   SERVICES,
+  TIME_SLOTS,
   formatDate,
   formatTime,
 } from "../../data/studioData.js";
 
 import {
   addDays,
-  findService,
   getActiveBookings,
   getServiceDemand,
-  shortDate,
   todayKey,
 } from "../../utils/studioOps.js";
 
-function Metric({
-  icon: Icon,
-  label,
-  value,
-  description,
-  tone = "",
-}) {
-  return (
-    <article className="ygs-metric">
-      <div className="ygs-metric-top">
-        <span className={`ygs-metric-icon ${tone}`}>
-          <Icon size={22} strokeWidth={1.6} />
-        </span>
+import "../../styles/glow-batch4-botanical.css";
 
-        <small>/ YOUR GLOW</small>
-      </div>
-
-      <strong>{value}</strong>
-      <h3>{label}</h3>
-      <p>{description}</p>
-    </article>
-  );
-}
+const findService = (id) =>
+  SERVICES.find((item) => item.id === id)?.name ||
+  "Sample consultation";
 
 export default function StudioDashboardPage() {
-  const { bookings } = useOutletContext();
+  const { bookings = [] } = useOutletContext();
 
   const today = todayKey();
 
@@ -68,7 +49,7 @@ export default function StudioDashboardPage() {
 
   const cancelled = bookings.filter(
     (item) => item.status === "cancelled"
-  );
+  ).length;
 
   const upcoming = useMemo(
     () =>
@@ -82,50 +63,45 @@ export default function StudioDashboardPage() {
     [active, today]
   );
 
-  const chart = useMemo(
-    () =>
-      Array.from({ length: 7 }, (_, index) => {
-        const date = addDays(today, index);
-
-        return {
-          date,
-          label: shortDate(date),
-          count: active.filter(
-            (item) => item.date === date
-          ).length,
-        };
-      }),
-    [active, today]
-  );
-
-  const services = useMemo(
+  const demand = useMemo(
     () => getServiceDemand(bookings),
     [bookings]
   );
 
-  const todayCount = active.filter(
+  const next7 = Array.from(
+    { length: 7 },
+    (_, index) => {
+      const date = addDays(today, index);
+
+      return {
+        date,
+        count: active.filter(
+          (item) => item.date === date
+        ).length,
+      };
+    }
+  );
+
+  const maxBar = Math.max(
+    1,
+    ...next7.map((day) => day.count)
+  );
+
+  const maxDemand = Math.max(
+    1,
+    ...demand.map((item) => item.active)
+  );
+
+  const weekCount = next7.reduce(
+    (sum, day) => sum + day.count,
+    0
+  );
+
+  const todayBookings = active.filter(
     (item) => item.date === today
   ).length;
 
-  const weekEnd = addDays(today, 6);
-
-  const weekCount = active.filter(
-    (item) =>
-      item.date >= today &&
-      item.date <= weekEnd
-  ).length;
-
-  const largestBar = Math.max(
-    1,
-    ...chart.map((item) => item.count)
-  );
-
-  const largestService = Math.max(
-    1,
-    ...services.map((item) => item.active)
-  );
-
-  const dateLabel = new Date().toLocaleDateString(
+  const nowLabel = new Date().toLocaleDateString(
     "en-PH",
     {
       weekday: "long",
@@ -136,288 +112,312 @@ export default function StudioDashboardPage() {
   );
 
   return (
-    <div className="ygs-page">
-      <div className="ygs-page-heading">
+    <div className="g4 g4-staff">
+      <section className="g4-staff-hero">
         <div>
-          <span className="ygs-eyebrow">
-            AESTHETIC STUDIO / OVERVIEW
+          <span className="g4-overline">
+            <Sparkles size={15} />
+            YOUR GLOW / STUDIO OPERATIONS
           </span>
 
           <h1>
-            A beautiful
-            <br />
-            <em>day in order.</em>
+            A clearer view of <em>the day.</em>
           </h1>
 
           <p>
-            {dateLabel} — A thoughtful overview of
-            this browser's fictional consultations.
+            {nowLabel} · A private-to-this-browser
+            perspective on fictional consultation requests.
           </p>
+
+          <div className="g4-staff-actions">
+            <Link to="/staff/consultations">
+              OPEN CONSULTATION DESK
+              <ArrowUpRight size={17} />
+            </Link>
+
+            <Link to="/calendar">
+              PUBLIC DEMO CALENDAR
+              <CalendarDays size={17} />
+            </Link>
+          </div>
         </div>
 
-        <Link
-          to="/calendar"
-          className="ygs-primary-button"
+        <div
+          className="g4-staff-hero-art"
+          aria-hidden="true"
         >
-          <CalendarDays size={18} />
-          New Demo Consultation
-          <ArrowUpRight size={17} />
-        </Link>
-      </div>
+          <span>YG.</span>
+          <i>OPERATIONS / 004</i>
+        </div>
+      </section>
 
-      <div className="ygs-metrics">
-        <Metric
-          icon={ClipboardList}
-          label="Total Requests"
-          value={bookings.length}
-          description="Saved locally in this browser"
-        />
+      <div className="g4-staff-metrics">
+        {[
+          {
+            label: "TOTAL ENTRIES",
+            number: bookings.length,
+            icon: ClipboardList,
+            note: "Browser-local records",
+          },
+          {
+            label: "REQUESTED",
+            number: active.length,
+            icon: CheckCircle2,
+            note: "Not confirmed",
+          },
+          {
+            label: "NEXT 7 DAYS",
+            number: weekCount,
+            icon: Clock3,
+            note: "Upcoming sample slots",
+          },
+          {
+            label: "CANCELLED",
+            number: cancelled,
+            icon: XCircle,
+            note: "Kept as demo history",
+          },
+        ].map((metric) => {
+          const Icon = metric.icon;
 
-        <Metric
-          icon={CheckCircle2}
-          label="Active Requests"
-          value={active.length}
-          description="Requested, not confirmed"
-          tone="rose"
-        />
-
-        <Metric
-          icon={Clock3}
-          label="Next 7 Days"
-          value={weekCount}
-          description="Upcoming sample consultations"
-          tone="olive"
-        />
-
-        <Metric
-          icon={XCircle}
-          label="Cancelled"
-          value={cancelled.length}
-          description="Retained as demo history"
-          tone="clay"
-        />
-      </div>
-
-      <div className="ygs-dashboard-grid">
-        <section className="ygs-panel">
-          <div className="ygs-panel-heading">
-            <div>
-              <span className="ygs-eyebrow">
-                SEVEN-DAY LOOKAHEAD
-              </span>
-
-              <h2>
-                Consultation <em>activity.</em>
-              </h2>
-            </div>
-
-            <span className="ygs-panel-tag">
-              NEXT 7 DAYS
-            </span>
-          </div>
-
-          <div
-            className="ygs-bar-chart"
-            role="img"
-            aria-label={
-              "Active demo consultation requests: " +
-              chart
-                .map(
-                  (item) =>
-                    `${item.label}: ${item.count}`
-                )
-                .join("; ")
-            }
-          >
-            {chart.map((item) => (
-              <div
-                className="ygs-bar-column"
-                key={item.date}
-              >
-                <strong>{item.count}</strong>
-
-                <div className="ygs-bar-track">
-                  <span
-                    style={{
-                      height: `${
-                        (item.count / largestBar) * 100
-                      }%`,
-                    }}
-                  />
-                </div>
-
-                <small>{item.label}</small>
+          return (
+            <article key={metric.label}>
+              <div>
+                <span>{metric.label}</span>
+                <Icon size={22} />
               </div>
-            ))}
-          </div>
 
-          <p className="ygs-panel-footnote">
-            Based on requested visit dates,
-            not completed studio services.
-          </p>
-        </section>
+              <strong>
+                {String(metric.number).padStart(2, "0")}
+              </strong>
 
-        <section className="ygs-panel">
-          <div className="ygs-panel-heading">
-            <div>
-              <span className="ygs-eyebrow">
-                SERVICE INTEREST
-              </span>
-
-              <h2>
-                Most explored <em>care.</em>
-              </h2>
-            </div>
-          </div>
-
-          <div className="ygs-demand-list">
-            {services.slice(0, 4).map((item, index) => (
-              <div
-                className="ygs-demand-item"
-                key={item.id}
-              >
-                <div className="ygs-demand-heading">
-                  <span>
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-
-                  <div>
-                    <strong>{item.name}</strong>
-                    <small>{item.category}</small>
-                  </div>
-
-                  <b>{item.active}</b>
-                </div>
-
-                <div className="ygs-demand-track">
-                  <span
-                    style={{
-                      width: `${
-                        (item.active /
-                          largestService) * 100
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Link
-            to="/staff/services"
-            className="ygs-panel-link"
-          >
-            View Service Catalog
-            <ArrowRight size={18} />
-          </Link>
-        </section>
+              <p>{metric.note}</p>
+            </article>
+          );
+        })}
       </div>
 
-      <section className="ygs-panel ygs-upcoming">
-        <div className="ygs-panel-heading">
-          <div>
-            <span className="ygs-eyebrow">
-              COMING UP
+      <div className="g4-staff-columns">
+        <section className="g4-staff-panel">
+          <header>
+            <span className="g4-overline">
+              01 / THE SEVEN DAY PULSE
             </span>
 
             <h2>
-              The next <em>consultations.</em>
+              The week <em>ahead.</em>
             </h2>
+          </header>
+
+          <div
+            className="g4-staff-chart"
+            role="img"
+            aria-label={next7
+              .map(
+                (day) =>
+                  `${formatDate(day.date)}: ${day.count} requests`
+              )
+              .join("; ")}
+          >
+            {next7.map((day) => (
+              <div key={day.date}>
+                <b>{day.count}</b>
+
+                <span>
+                  <i
+                    style={{
+                      height: `${
+                        day.count
+                          ? Math.max(
+                              5,
+                              (day.count / maxBar) * 100
+                            )
+                          : 2
+                      }%`,
+                    }}
+                  />
+                </span>
+
+                <small>
+                  {new Date(
+                    `${day.date}T12:00:00`
+                  ).toLocaleDateString("en-PH", {
+                    weekday: "short",
+                  })}
+                </small>
+              </div>
+            ))}
+          </div>
+
+          <div className="g4-panel-foot">
+            <span>
+              TODAY / {todayBookings} SAMPLE REQUEST(S)
+            </span>
+
+            <Link to="/staff/schedule">
+              SCHEDULE
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        </section>
+
+        <section className="g4-staff-panel">
+          <header>
+            <span className="g4-overline">
+              02 / INTEREST IN SERVICE
+            </span>
+
+            <h2>
+              The care <em>pulse.</em>
+            </h2>
+          </header>
+
+          <div className="g4-staff-demand">
+            {demand.map((item, index) => (
+              <div key={item.id}>
+                <span>0{index + 1}</span>
+
+                <div>
+                  <strong>{item.name}</strong>
+
+                  <span>
+                    <i
+                      style={{
+                        width: `${
+                          (item.active / maxDemand) * 100
+                        }%`,
+                      }}
+                    />
+                  </span>
+                </div>
+
+                <b>{item.active}</b>
+              </div>
+            ))}
+          </div>
+
+          <div className="g4-panel-foot">
+            <span>
+              REQUESTS, NOT CLINICAL RESULTS
+            </span>
+
+            <Link to="/staff/insights">
+              INSIGHTS
+              <ArrowRight size={15} />
+            </Link>
+          </div>
+        </section>
+      </div>
+
+      <div className="g4-staff-columns g4-staff-columns--bottom">
+        <section className="g4-staff-panel">
+          <header>
+            <span className="g4-overline">
+              03 / UPCOMING DEMO REQUESTS
+            </span>
+
+            <h2>
+              Next in <em>the journal.</em>
+            </h2>
+          </header>
+
+          <div className="g4-staff-upcoming">
+            {upcoming.slice(0, 5).map((item) => (
+              <article key={item.id}>
+                <time>
+                  {formatDate(item.date)}
+
+                  <small>
+                    {formatTime(item.time)}
+                  </small>
+                </time>
+
+                <div>
+                  <strong>
+                    {findService(item.serviceId)}
+                  </strong>
+
+                  <small>
+                    {item.alias} · {item.id}
+                  </small>
+                </div>
+
+                <span>REQUESTED</span>
+              </article>
+            ))}
+
+            {!upcoming.length && (
+              <p>
+                No upcoming demo consultations yet.
+                Use the public calendar to create a
+                fictional request.
+              </p>
+            )}
           </div>
 
           <Link
             to="/staff/consultations"
-            className="ygs-panel-link"
+            className="g4-panel-link"
           >
-            See All Requests
-            <ArrowRight size={18} />
+            GO TO CONSULTATION DESK
+            <ArrowUpRight size={17} />
           </Link>
-        </div>
+        </section>
 
-        {upcoming.length === 0 ? (
-          <div className="ygs-empty">
-            <CalendarDays size={33} />
+        <section className="g4-staff-panel g4-staff-notes">
+          <header>
+            <span className="g4-overline">
+              04 / SYSTEM OF RECORD
+            </span>
 
-            <h3>
-              Nothing scheduled in the demo.
-            </h3>
+            <h2>
+              Thoughtfully <em>contained.</em>
+            </h2>
+          </header>
+
+          <div>
+            <Layers3 size={22} />
+            <strong>One shared time resource</strong>
 
             <p>
-              Create a fictional consultation on
-              the public calendar to populate
-              this studio overview.
+              Each sample time holds one active request,
+              regardless of treatment interest.
             </p>
-
-            <Link
-              className="ygs-secondary-button"
-              to="/calendar"
-            >
-              Open Calendar
-              <ArrowUpRight size={17} />
-            </Link>
           </div>
-        ) : (
-          <div className="ygs-upcoming-list">
-            {upcoming.slice(0, 6).map((booking) => {
-              const service = findService(
-                booking.serviceId
-              );
 
-              return (
-                <article
-                  className="ygs-upcoming-row"
-                  key={booking.id}
-                >
-                  <span className="ygs-upcoming-icon">
-                    <Sparkles size={21} />
-                  </span>
+          <div>
+            <CalendarDays size={22} />
 
-                  <div className="ygs-upcoming-description">
-                    <strong>
-                      {service?.name || "Consultation"}
-                    </strong>
+            <strong>
+              Seven daily sample times
+            </strong>
 
-                    <small>
-                      Demo alias: {booking.alias}
-                    </small>
-                  </div>
-
-                  <div className="ygs-upcoming-date">
-                    <strong>
-                      {formatDate(booking.date)}
-                    </strong>
-
-                    <small>
-                      {formatTime(booking.time)}
-                    </small>
-                  </div>
-
-                  <span className="ygs-status">
-                    Requested
-                  </span>
-                </article>
-              );
-            })}
+            <p>
+              {TIME_SLOTS.length} available clock options
+              on Monday–Saturday, up to 90 days ahead.
+            </p>
           </div>
-        )}
-      </section>
 
-      <div className="ygs-information">
-        <Heart size={22} />
+          <div>
+            <ShieldCheck size={22} />
 
-        <div>
-          <strong>
-            Beautiful reporting, without invented results.
-          </strong>
+            <strong>
+              Browser-only demonstration
+            </strong>
 
-          <p>
-            These figures show fictional requests
-            created in this browser. They do not
-            represent actual customers, sales,
-            clinical procedures, or patient outcomes.
-          </p>
-        </div>
+            <p>
+              No login, server database, payment processing,
+              verified staff access or actual patient data.
+            </p>
+          </div>
+        </section>
       </div>
+
+      <p className="g4-staff-footnote">
+        <ShieldCheck size={17} />
+        STUDIO DEMO IS NOT AN AUTHENTICATED ADMIN PORTAL.
+        USE FICTIONAL ALIASES ONLY.
+      </p>
     </div>
   );
 }

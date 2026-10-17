@@ -3,13 +3,13 @@ import { Link, useOutletContext } from "react-router-dom";
 
 import {
   ArrowRight,
+  ArrowUpRight,
   CalendarDays,
-  ChartColumn,
   CheckCircle2,
-  ClipboardList,
-  Clock3,
   Download,
-  Sparkles,
+  FileText,
+  ShieldCheck,
+  TrendingUp,
   XCircle,
 } from "lucide-react";
 
@@ -19,8 +19,8 @@ import {
 } from "../../data/studioData.js";
 
 import {
-  findService,
   downloadConsultationsCSV,
+  findService,
 } from "../../utils/studioOps.js";
 
 import {
@@ -32,116 +32,123 @@ import {
   percentage,
 } from "../../utils/studioInsights.js";
 
-function Metric({ icon: Icon, number, label, description }) {
-  return (
-    <article className="ygi-metric">
-      <span className="ygi-metric-icon">
-        <Icon size={23} strokeWidth={1.5} />
-      </span>
-
-      <strong>{number}</strong>
-      <h3>{label}</h3>
-      <p>{description}</p>
-    </article>
-  );
-}
+import "../../styles/glow-batch6-final.css";
 
 export default function StudioReportsPage() {
-  const { bookings } = useOutletContext();
-
+  const { bookings = [] } = useOutletContext();
   const [period, setPeriod] = useState("all");
 
-  const filtered = useMemo(
+  const scoped = useMemo(
     () => filterPeriod(bookings, period),
     [bookings, period]
   );
 
   const stats = useMemo(
-    () => requestStats(filtered),
-    [filtered]
+    () => requestStats(scoped),
+    [scoped]
   );
 
   const activity = useMemo(
-    () => dailyActivity(filtered, period),
-    [filtered, period]
+    () => dailyActivity(scoped, period),
+    [scoped, period]
   );
 
   const services = useMemo(
-    () => serviceInsights(filtered),
-    [filtered]
+    () => serviceInsights(scoped),
+    [scoped]
   );
 
-  const largestDay = Math.max(
+  const topServices = services
+    .filter((item) => item.total > 0)
+    .slice(0, 4);
+
+  const recent = useMemo(
+    () =>
+      [...scoped]
+        .sort((a, b) =>
+          `${b.date} ${b.time}`.localeCompare(
+            `${a.date} ${a.time}`
+          )
+        )
+        .slice(0, 5),
+    [scoped]
+  );
+
+  const peak = Math.max(
     1,
     ...activity.map((item) => item.count)
   );
 
-  const largestService = Math.max(
+  const top = Math.max(
     1,
-    ...services.map((item) => item.total)
+    ...topServices.map((item) => item.total)
   );
 
-  const activePercentage = percentage(
+  const requestedRate = percentage(
     stats.requested,
     stats.total
   );
 
-  const latest = [...filtered]
-    .sort((a, b) =>
-      `${b.date} ${b.time}`.localeCompare(
-        `${a.date} ${a.time}`
-      )
-    )
-    .slice(0, 5);
-
-  function downloadReport() {
-    downloadConsultationsCSV(
-      filtered,
-      `your-glow-report-${period}.csv`
-    );
-  }
-
-  const chartTitle =
+  const chartLabel =
     period === "past30"
-      ? "Previous 14 days"
+      ? "LAST 14 DAYS"
       : period === "next7"
-        ? "Next 7 days"
-        : "Next 14 days";
+        ? "NEXT 7 DAYS"
+        : "NEXT 14 DAYS";
 
   return (
-    <div className="ygs-page ygi-page">
-      <div className="ygs-page-heading">
+    <main className="g6 g6-reports">
+      <header className="g6-hero">
         <div>
-          <span className="ygs-eyebrow">
-            BUSINESS INTELLIGENCE / BATCH 04
+          <span className="g6-kicker">
+            STUDIO INTELLIGENCE / 01 — REPORTS
           </span>
 
           <h1>
-            A clearer
-            <br />
-            <em>studio perspective.</em>
+            The bigger <em>picture.</em>
           </h1>
 
           <p>
-            Explore consultation patterns and
-            sample service demand from this
-            browser's fictional appointment history.
+            Explore fictional consultation requests
+            as clear, thoughtful activity—not
+            revenue, confirmed visits, or
+            clinical outcomes.
           </p>
+
+          <div className="g6-hero-actions">
+            <button
+              type="button"
+              onClick={() =>
+                downloadConsultationsCSV(
+                  scoped,
+                  `your-glow-report-${period}.csv`
+                )
+              }
+              disabled={!scoped.length}
+            >
+              <Download size={17} />
+              EXPORT FILTERED CSV
+            </button>
+
+            <Link to="/staff/insights">
+              SERVICE INSIGHTS
+              <ArrowUpRight size={17} />
+            </Link>
+          </div>
         </div>
 
-        <button
-          type="button"
-          className="ygs-primary-button"
-          onClick={downloadReport}
+        <div
+          className="g6-hero-art"
+          aria-hidden="true"
         >
-          <Download size={18} />
-          Export Report CSV
-        </button>
-      </div>
+          <span>R</span>
+          <small>FIELD REPORT / 006</small>
+        </div>
+      </header>
 
-      <div className="ygi-filter-bar">
+      <div className="g6-toolbar">
         <label>
-          <span>REPORTING PERIOD</span>
+          REPORTING WINDOW
 
           <select
             value={period}
@@ -161,83 +168,104 @@ export default function StudioReportsPage() {
         </label>
 
         <p>
-          All reporting is grouped by requested
-          consultation date, not payment or
-          completed service date.
+          <CalendarDays size={17} />
+          Filters use the requested visit date,
+          not when a form was submitted.
         </p>
       </div>
 
-      <div className="ygi-metrics">
-        <Metric
-          icon={ClipboardList}
-          number={stats.total}
-          label="All Requests"
-          description="Within the selected period"
-        />
+      <div className="g6-kpis">
+        {[
+          [
+            "ALL ENTRIES",
+            stats.total,
+            FileText,
+            "Within selected dates",
+          ],
+          [
+            "REQUESTED",
+            stats.requested,
+            CheckCircle2,
+            "Unconfirmed demo requests",
+          ],
+          [
+            "UPCOMING",
+            stats.upcoming,
+            CalendarDays,
+            "Requested for today or later",
+          ],
+          [
+            "CANCELLED",
+            stats.cancelled,
+            XCircle,
+            "Historical demo entries",
+          ],
+        ].map(([label, number, Icon, note], index) => (
+          <article
+            key={label}
+            className={
+              index === 1 ? "g6-kpi-feature" : ""
+            }
+          >
+            <div>
+              <span>{label}</span>
+              <Icon size={20} />
+            </div>
 
-        <Metric
-          icon={CheckCircle2}
-          number={stats.requested}
-          label="Active Requests"
-          description="Pending fictional requests"
-        />
+            <strong>
+              {String(number).padStart(2, "0")}
+            </strong>
 
-        <Metric
-          icon={CalendarDays}
-          number={stats.upcoming}
-          label="Upcoming"
-          description="Active requests dated today or later"
-        />
-
-        <Metric
-          icon={XCircle}
-          number={stats.cancelled}
-          label="Cancelled"
-          description="Retained in demo history"
-        />
+            <p>{note}</p>
+          </article>
+        ))}
       </div>
 
-      <div className="ygi-two-columns">
-        <section className="ygs-panel">
-          <div className="ygs-panel-heading">
+      <div className="g6-columns">
+        <section className="g6-panel">
+          <div className="g6-panel-head">
             <div>
-              <span className="ygs-eyebrow">
-                CONSULTATION ACTIVITY
+              <span className="g6-kicker">
+                02 / THE REQUEST PULSE
               </span>
 
               <h2>
-                A view of <em>the days.</em>
+                Moments <em>over time.</em>
               </h2>
             </div>
 
-            <span className="ygs-panel-tag">
-              {chartTitle.toUpperCase()}
+            <span className="g6-tag">
+              {chartLabel}
             </span>
           </div>
 
           <div
-            className="ygi-chart"
+            className="g6-chart"
             role="img"
             aria-label={activity
               .map(
                 (item) =>
-                  `${item.label}: ${item.count} requests`
+                  `${item.label}: ${item.count} active demo requests`
               )
               .join("; ")}
           >
             {activity.map((item) => (
               <div
-                className="ygi-chart-column"
+                className="g6-chart-col"
                 key={item.date}
-                title={`${item.label}: ${item.count}`}
               >
-                <strong>{item.count}</strong>
+                <b>{item.count}</b>
 
-                <div className="ygi-chart-track">
-                  <span
+                <div className="g6-chart-track">
+                  <i
                     style={{
                       height: `${
-                        (item.count / largestDay) * 100
+                        item.count
+                          ? Math.max(
+                              5,
+                              (item.count / peak) * 100
+                            )
+                          : 2
                       }%`,
                     }}
                   />
@@ -248,210 +276,199 @@ export default function StudioReportsPage() {
             ))}
           </div>
 
-          <p className="ygs-panel-footnote">
-            Bars represent active requests only.
-            They do not represent consultations
-            actually completed.
+          <p className="g6-caption">
+            This chart counts requested demo
+            slots on each date. A zero bar means
+            no matching requests.
           </p>
         </section>
 
-        <section className="ygs-panel">
-          <div className="ygs-panel-heading">
+        <section className="g6-panel">
+          <div className="g6-panel-head">
             <div>
-              <span className="ygs-eyebrow">
-                REQUEST STATUS OVERVIEW
+              <span className="g6-kicker">
+                03 / REQUEST DISTRIBUTION
               </span>
 
               <h2>
-                Booking <em>status.</em>
+                A little <em>perspective.</em>
               </h2>
             </div>
+
+            <TrendingUp size={25} />
           </div>
 
-          <div className="ygi-status-overview">
-            <strong>{activePercentage}%</strong>
+          <div className="g6-rate">
+            <strong>{requestedRate}%</strong>
 
-            <p>
-              of demo requests within this period
-              currently have an active status.
-            </p>
+            <span>
+              OF MATCHING ENTRIES ARE
+              CURRENTLY REQUESTED
+            </span>
           </div>
 
-          <div className="ygi-status-track">
+          <div
+            className="g6-progress"
+            aria-label={`${requestedRate}% requested`}
+          >
             <span
               style={{
-                width: `${activePercentage}%`,
+                width: `${requestedRate}%`,
               }}
             />
           </div>
 
-          <div className="ygi-status-legend">
-            <div>
-              <CheckCircle2 size={18} />
-              <span>Requested</span>
-              <strong>{stats.requested}</strong>
-            </div>
+          <div className="g6-status-legend">
+            <span>
+              <i />
+              REQUESTED: {stats.requested}
+            </span>
 
-            <div>
-              <XCircle size={18} />
-              <span>Cancelled</span>
-              <strong>{stats.cancelled}</strong>
-            </div>
+            <span>
+              <i />
+              CANCELLED: {stats.cancelled}
+            </span>
           </div>
 
-          <div className="ygi-note-mini">
-            <Clock3 size={19} />
-            Active does not mean confirmed,
-            paid or completed.
-          </div>
+          <p className="g6-caption">
+            Status distribution is calculated
+            from locally saved requests. It
+            does not measure attendance,
+            conversion or financial performance.
+          </p>
         </section>
       </div>
 
-      <section className="ygs-panel ygi-section">
-        <div className="ygs-panel-heading">
-          <div>
-            <span className="ygs-eyebrow">
-              MOST REQUESTED SERVICE TYPES
-            </span>
+      <div className="g6-columns">
+        <section className="g6-panel">
+          <div className="g6-panel-head">
+            <div>
+              <span className="g6-kicker">
+                04 / MOST-EXPLORED SERVICES
+              </span>
 
-            <h2>
-              The treatment <em>edit.</em>
-            </h2>
-          </div>
-
-          <Link
-            to="/staff/insights"
-            className="ygs-panel-link"
-          >
-            Explore Service Insights
-            <ArrowRight size={18} />
-          </Link>
-        </div>
-
-        <div className="ygi-demand-list">
-          {services.slice(0, 6).map((item, index) => (
-            <div
-              className="ygi-demand-item"
-              key={item.id}
-            >
-              <div className="ygi-demand-heading">
-                <span>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-
-                <div>
-                  <strong>{item.name}</strong>
-                  <small>{item.category}</small>
-                </div>
-
-                <b>{item.total}</b>
-              </div>
-
-              <div className="ygi-demand-track">
-                <span
-                  style={{
-                    width: `${
-                      (item.total / largestService) * 100
-                    }%`,
-                  }}
-                />
-              </div>
+              <h2>
+                The care <em>edit.</em>
+              </h2>
             </div>
-          ))}
-        </div>
-
-        {stats.total === 0 && (
-          <p className="ygi-empty-hint">
-            No demo consultations match this period yet.
-            Create a sample booking to populate the chart.
-          </p>
-        )}
-      </section>
-
-      <section className="ygs-panel ygi-section">
-        <div className="ygs-panel-heading">
-          <div>
-            <span className="ygs-eyebrow">
-              SAMPLE REQUEST HISTORY
-            </span>
-
-            <h2>
-              Recent <em>date selections.</em>
-            </h2>
           </div>
+
+          {topServices.length ? (
+            <div className="g6-ranking">
+              {topServices.map((item, i) => (
+                <div key={item.id}>
+                  <span>0{i + 1}</span>
+
+                  <div>
+                    <strong>
+                      {item.name}
+                    </strong>
+
+                    <div className="g6-progress">
+                      <span
+                        style={{
+                          width: `${
+                            (item.total / top) * 100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <b>{item.total}</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="g6-empty">
+              <FileText size={27} />
+
+              <p>
+                No demo request data in
+                this reporting window.
+              </p>
+            </div>
+          )}
 
           <Link
-            to="/staff/consultations"
-            className="ygs-panel-link"
+            className="g6-bottom-link"
+            to="/staff/insights"
           >
-            Consultation Desk
-            <ArrowRight size={18} />
+            EXPLORE ALL SIX SERVICES
+            <ArrowRight size={17} />
           </Link>
-        </div>
+        </section>
 
-        {latest.length === 0 ? (
-          <div className="ygs-empty">
-            <CalendarDays size={32} />
-            <h3>No records in this period.</h3>
-            <p>
-              Change the filter or make a fictional
-              consultation request.
-            </p>
+        <section className="g6-panel">
+          <div className="g6-panel-head">
+            <div>
+              <span className="g6-kicker">
+                05 / REQUEST JOURNAL
+              </span>
+
+              <h2>
+                Recent <em>entries.</em>
+              </h2>
+            </div>
           </div>
-        ) : (
-          <div className="ygi-record-list">
-            {latest.map((booking) => (
-              <article
-                className="ygi-record"
-                key={booking.id}
-              >
-                <span className="ygi-record-icon">
-                  <Sparkles size={20} />
-                </span>
 
-                <div>
-                  <strong>
-                    {findService(
-                      booking.serviceId
-                    )?.name || "Consultation"}
-                  </strong>
+          {recent.length ? (
+            <div className="g6-recent">
+              {recent.map((item) => (
+                <article key={item.id}>
+                  <span className="g6-recent-date">
+                    {formatDate(item.date)}
 
-                  <small>
-                    {booking.alias} · {booking.status}
-                  </small>
-                </div>
+                    <small>
+                      {formatTime(item.time)}
+                    </small>
+                  </span>
 
-                <div className="ygi-record-date">
-                  <strong>
-                    {formatDate(booking.date)}
-                  </strong>
+                  <div>
+                    <strong>
+                      {findService(item.serviceId)
+                        ?.name || "Sample service"}
+                    </strong>
 
-                  <small>
-                    {formatTime(booking.time)}
-                  </small>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+                    <small>{item.id}</small>
+                  </div>
 
-      <div className="ygs-information">
-        <ChartColumn size={23} />
+                  <span
+                    className={
+                      item.status === "requested"
+                        ? "g6-status-active"
+                        : "g6-status-cancelled"
+                    }
+                  >
+                    {item.status.toUpperCase()}
+                  </span>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="g6-empty">
+              <CalendarDays size={27} />
+              <p>No entries found.</p>
+            </div>
+          )}
 
-        <div>
-          <strong>
-            Studio analytics without invented revenue.
-          </strong>
-
-          <p>
-            All metrics come from fictional requests.
-            They do not measure treatments performed,
-            real customer conversion, income or
-            patient outcomes.
-          </p>
-        </div>
+          <Link
+            className="g6-bottom-link"
+            to="/staff/consultations"
+          >
+            OPEN CONSULTATION DESK
+            <ArrowRight size={17} />
+          </Link>
+        </section>
       </div>
-    </div>
+
+      <p className="g6-notice">
+        <ShieldCheck size={18} />
+        Fictional, browser-local reporting.
+        No real clinic activity, verified
+        availability, patient data or payment
+        metrics.
+      </p>
+    </main>
   );
 }

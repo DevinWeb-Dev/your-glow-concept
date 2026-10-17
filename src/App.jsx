@@ -1867,65 +1867,66 @@ export default function App() {
   }
 />
 
-{/* BATCH 3 — YOUR GLOW STUDIO OPERATIONS */}
+          {/* BATCH 3 — YOUR GLOW STUDIO OPERATIONS */}
 
-<Route
-  path="staff"
-  element={
-    <StudioLayout
-      bookings={bookings}
-      onCancelBooking={cancelBooking}
-      onReplaceBookings={setBookings}
-    />
-  }
->
-  <Route
-    index
-    element={<StudioDashboardPage />}
-  />
+          <Route
+            path="staff"
+            element={
+              <StudioLayout
+                bookings={bookings}
+                onCancelBooking={cancelBooking}
+                onReplaceBookings={setBookings}
+              />
+            }
+          >
+            <Route
+              index
+              element={<StudioDashboardPage />}
+            />
 
-  <Route
-    path="consultations"
-    element={<ConsultationDeskPage />}
-  />
+            <Route
+              path="consultations"
+              element={<ConsultationDeskPage />}
+            />
 
-  <Route
-    path="schedule"
-    element={<StudioSchedulePage />}
-  />
+            <Route
+              path="schedule"
+              element={<StudioSchedulePage />}
+            />
 
-  <Route
-    path="services"
-    element={<ServiceCatalogPage />}
-  />
-</Route>
+            <Route
+              path="services"
+              element={<ServiceCatalogPage />}
+            />
 
-{/* BATCH 4 — STUDIO INTELLIGENCE */}
+            <Route
+              path="reports"
+              element={<StudioReportsPage />}
+            />
 
-<Route
-  path="reports"
-  element={<StudioReportsPage />}
-/>
+            <Route
+              path="insights"
+              element={<ServiceInsightsPage />}
+            />
 
-<Route
-  path="insights"
-  element={<ServiceInsightsPage />}
-/>
+            <Route
+              path="settings"
+              element={<StudioSettingsPage />}
+            />
 
-<Route
-  path="settings"
-  element={<StudioSettingsPage />}
-/>
+            <Route
+              path="data"
+              element={<StudioDataCenterPage />}
+            />
+          </Route>
 
-<Route
-  path="data"
-  element={<StudioDataCenterPage />}
-/>
+          {/* 404 — KEEP OUTSIDE STAFF */}
 
           <Route
             path="*"
             element={<NotFoundPage />}
           />
+
         </Routes>
       </div>
 

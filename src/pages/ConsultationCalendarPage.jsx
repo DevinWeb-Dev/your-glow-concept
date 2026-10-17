@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
@@ -23,614 +23,539 @@ import {
   localDateKey,
 } from "../data/studioData.js";
 
-import "../styles/experience.css";
+import "../styles/glow-batch4-botanical.css";
 
-function getInitialDate() {
+function initialDate() {
   const date = new Date(`${dateAfter(1)}T12:00:00`);
 
-  if (date.getDay() === 0) {
+  while (date.getDay() === 0) {
     date.setDate(date.getDate() + 1);
   }
 
   return localDateKey(date);
 }
 
-function buildMonth(year, month) {
-  const firstDay = new Date(year, month, 1, 12);
-  const offset = firstDay.getDay();
+function gridFor(year, month) {
+  const leading = new Date(year, month, 1, 12).getDay();
 
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(
       year,
       month,
-      index - offset + 1,
+      index - leading + 1,
       12
     );
 
     return {
       key: localDateKey(date),
-      day: date.getDate(),
+      number: date.getDate(),
       weekday: date.getDay(),
-      currentMonth: date.getMonth() === month,
+      inMonth: date.getMonth() === month,
     };
   });
 }
 
 export default function ConsultationCalendarPage({
-  bookings,
+  bookings = [],
   onCreateBooking,
 }) {
   const [params] = useSearchParams();
-  const requestedService = params.get("service");
 
-  const [serviceId, setServiceId] = useState(() => {
-    return SERVICES.some(
-      (item) => item.id === requestedService
-    )
-      ? requestedService
-      : SERVICES[0].id;
-  });
+  const requested = params.get("service");
 
-  const [selectedDate, setSelectedDate] = useState(
-    getInitialDate
+  const [serviceId, setServiceId] = useState(
+    SERVICES.some((item) => item.id === requested)
+      ? requested
+      : SERVICES[0].id
   );
 
-  const [selectedTime, setSelectedTime] = useState("");
+  const [date, setDate] = useState(initialDate);
+  const [time, setTime] = useState("");
   const [alias, setAlias] = useState("");
   const [error, setError] = useState("");
-  const [confirmation, setConfirmation] = useState(null);
+  const [saved, setSaved] = useState(null);
 
-  const [visibleMonth, setVisibleMonth] = useState(() => {
-    const date = new Date(
-      `${getInitialDate()}T12:00:00`
+  const [month, setMonth] = useState(() => {
+    const current = new Date(
+      `${initialDate()}T12:00:00`
     );
 
     return {
-      year: date.getFullYear(),
-      month: date.getMonth(),
+      year: current.getFullYear(),
+      month: current.getMonth(),
     };
   });
 
-  useEffect(() => {
-    if (
-      requestedService &&
-      SERVICES.some(
-        (item) => item.id === requestedService
-      )
-    ) {
-      setServiceId(requestedService);
-    }
-  }, [requestedService]);
-
-  const minDate = dateAfter(1);
-  const maxDate = dateAfter(90);
-
-  const minDateObject = new Date(
-    `${minDate}T12:00:00`
-  );
-
-  const maxDateObject = new Date(
-    `${maxDate}T12:00:00`
-  );
+  const min = dateAfter(1);
+  const max = dateAfter(90);
 
   const minMonth =
-    minDateObject.getFullYear() * 12 +
-    minDateObject.getMonth();
+    Number(min.slice(0, 4)) * 12 +
+    Number(min.slice(5, 7)) -
+    1;
 
   const maxMonth =
-    maxDateObject.getFullYear() * 12 +
-    maxDateObject.getMonth();
+    Number(max.slice(0, 4)) * 12 +
+    Number(max.slice(5, 7)) -
+    1;
 
-  const displayedMonth =
-    visibleMonth.year * 12 +
-    visibleMonth.month;
+  const monthIndex = month.year * 12 + month.month;
 
-  const calendarDays = useMemo(
-    () =>
-      buildMonth(
-        visibleMonth.year,
-        visibleMonth.month
-      ),
-    [visibleMonth.year, visibleMonth.month]
+  const days = useMemo(
+    () => gridFor(month.year, month.month),
+    [month.year, month.month]
   );
 
-  const service = SERVICES.find(
-    (item) => item.id === serviceId
-  );
+  const chosen =
+    SERVICES.find((item) => item.id === serviceId) ||
+    SERVICES[0];
 
-  const occupiedTimes = useMemo(
-    () =>
-      bookings
-        .filter(
-          (item) =>
-            item.date === selectedDate &&
-            item.status === "requested"
-        )
-        .map((item) => item.time),
-    [bookings, selectedDate]
-  );
+  const occupied = useMemo(() => {
+    const map = new Map();
 
-  const occupiedByDate = useMemo(() => {
-    const result = new Map();
+    for (const item of bookings) {
+      if (item.status !== "requested") continue;
 
-    bookings.forEach((item) => {
-      if (item.status !== "requested") return;
-
-      if (!result.has(item.date)) {
-        result.set(item.date, new Set());
+      if (!map.has(item.date)) {
+        map.set(item.date, new Set());
       }
 
-      result.get(item.date).add(item.time);
-    });
+      map.get(item.date).add(item.time);
+    }
 
-    return result;
+    return map;
   }, [bookings]);
 
-  const monthTitle = new Date(
-    visibleMonth.year,
-    visibleMonth.month,
-    1
+  const taken = occupied.get(date) || new Set();
+
+  const available = TIME_SLOTS.filter(
+    (slot) => !taken.has(slot)
+  );
+
+  const monthLabel = new Date(
+    month.year,
+    month.month,
+    1,
+    12
   ).toLocaleDateString("en-PH", {
     month: "long",
     year: "numeric",
   });
 
-  const availableTimes = TIME_SLOTS.filter(
-    (time) => !occupiedTimes.includes(time)
-  );
-
-  function changeMonth(offset) {
+  function changeMonth(delta) {
     const next = new Date(
-      visibleMonth.year,
-      visibleMonth.month + offset,
-      1
+      month.year,
+      month.month + delta,
+      1,
+      12
     );
 
-    const nextMonth =
-      next.getFullYear() * 12 +
-      next.getMonth();
+    const index =
+      next.getFullYear() * 12 + next.getMonth();
 
-    if (nextMonth < minMonth || nextMonth > maxMonth) {
-      return;
-    }
+    if (index < minMonth || index > maxMonth) return;
 
-    setVisibleMonth({
+    setMonth({
       year: next.getFullYear(),
       month: next.getMonth(),
     });
   }
 
-  function chooseDate(key) {
-    setSelectedDate(key);
-    setSelectedTime("");
-    setError("");
-    setConfirmation(null);
-  }
-
-  function chooseTime(time) {
-    setSelectedTime(time);
-    setError("");
-    setConfirmation(null);
-  }
-
-  function handleSubmit(event) {
+  function submit(event) {
     event.preventDefault();
 
-    if (!selectedTime) {
-      setError("Please select a demo time slot.");
+    setError("");
+    setSaved(null);
+
+    if (!time || taken.has(time)) {
+      setError(
+        "Choose a sample slot that isn't occupied."
+      );
       return;
     }
 
     const result = onCreateBooking({
       alias,
       serviceId,
-      date: selectedDate,
-      time: selectedTime,
+      date,
+      time,
     });
 
     if (!result.ok) {
-      setError(result.error);
-      setConfirmation(null);
+      setError(
+        result.error || "Could not save the sample request."
+      );
       return;
     }
 
-    setConfirmation({
+    setSaved({
       id: result.id,
-      date: selectedDate,
-      time: selectedTime,
-      serviceName: service.name,
+      date,
+      time,
+      serviceName: chosen.name,
     });
 
+    setTime("");
     setAlias("");
-    setSelectedTime("");
-    setError("");
   }
 
   return (
-    <div className="yg2-calendar-page">
-      <section className="yg2-page-hero">
-        <div className="yg-container">
-          <span className="yg-overline">
-            YOUR GLOW / CONSULTATION CALENDAR
+    <main className="g4 g4-calendar">
+      <header className="g4-calendar-hero">
+        <div className="g4-wrap">
+          <span className="g4-overline">
+            <CalendarDays size={17} />
+            THE LIVING CALENDAR / 004
           </span>
 
           <h1>
-            Make a little time
-            <br />
-            <em>for yourself.</em>
+            A MOMENT <em>in time.</em>
           </h1>
 
           <p>
-            Find a date that feels right, explore
-            sample consultation times, and experience
-            a more considered way to schedule.
+            Choose a service interest, explore sample
+            times and leave a fictional request in your
+            browser. This does not show real clinic
+            availability.
           </p>
+
+          <Link className="g4-inline-link" to="/requests">
+            YOUR DEMO REQUESTS
+            <ArrowUpRight size={17} />
+          </Link>
         </div>
-      </section>
 
-      <section className="yg2-section yg-container">
-        <div className="yg2-booking-layout">
-          <div className="yg2-booking-main">
-            <div className="yg2-step-heading">
-              <span className="yg-overline">
-                STEP 01 / CHOOSE YOUR INTEREST
-              </span>
+        <span
+          className="g4-calendar-halo"
+          aria-hidden="true"
+        />
+      </header>
 
-              <h2>
-                Begin with <em>your goals.</em>
-              </h2>
+      <div className="g4-wrap g4-calendar-layout">
+        <div className="g4-calendar-main">
+          <div className="g4-panel g4-calendar-card">
+            <div className="g4-calendar-card-head">
+              <div>
+                <span className="g4-overline">
+                  01 / SELECT A DAY
+                </span>
+
+                <h2>{monthLabel}</h2>
+              </div>
+
+              <div className="g4-calendar-arrows">
+                <button
+                  type="button"
+                  aria-label="Previous month"
+                  disabled={monthIndex <= minMonth}
+                  onClick={() => changeMonth(-1)}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+
+                <button
+                  type="button"
+                  aria-label="Next month"
+                  disabled={monthIndex >= maxMonth}
+                  onClick={() => changeMonth(1)}
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
             </div>
 
-            <label className="yg2-service-select">
-              <span>SELECT A SAMPLE SERVICE</span>
+            <div className="g4-weekdays">
+              {[
+                "SUN",
+                "MON",
+                "TUE",
+                "WED",
+                "THU",
+                "FRI",
+                "SAT",
+              ].map((name) => (
+                <span key={name}>{name}</span>
+              ))}
+            </div>
+
+            <div
+              className="g4-days"
+              role="group"
+              aria-label="Select a sample consultation day"
+            >
+              {days.map((day) => {
+                const full =
+                  (occupied.get(day.key)?.size || 0) >=
+                  TIME_SLOTS.length;
+
+                const valid =
+                  day.inMonth &&
+                  day.key >= min &&
+                  day.key <= max &&
+                  day.weekday !== 0 &&
+                  !full;
+
+                return (
+                  <button
+                    type="button"
+                    key={day.key}
+                    disabled={!valid}
+                    aria-pressed={date === day.key}
+                    aria-label={`${formatDate(day.key)}${
+                      full
+                        ? ", all sample times occupied"
+                        : ""
+                    }`}
+                    className={[
+                      day.inMonth ? "" : "is-outside",
+                      date === day.key ? "is-active" : "",
+                    ].join(" ")}
+                    onClick={() => {
+                      setDate(day.key);
+                      setTime("");
+                      setError("");
+                      setSaved(null);
+                    }}
+                  >
+                    <strong>{day.number}</strong>
+
+                    {valid && (
+                      <i aria-hidden="true" />
+                    )}
+
+                    {full &&
+                      day.inMonth &&
+                      day.key >= min &&
+                      day.key <= max && (
+                        <small>FULL</small>
+                      )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="g4-calendar-legend">
+              <span>
+                <i />
+                SELECTABLE DAY
+              </span>
+
+              <span>
+                <i />
+                SELECTED DAY
+              </span>
+
+              <span>
+                MON–SAT / NEXT 90 DAYS
+              </span>
+            </div>
+          </div>
+
+          <section className="g4-panel g4-slots">
+            <div className="g4-calendar-card-head">
+              <div>
+                <span className="g4-overline">
+                  02 / CHOOSE A MOMENT
+                </span>
+
+                <h2>{formatDate(date)}</h2>
+              </div>
+
+              <span className="g4-slots-count">
+                {available.length} / {TIME_SLOTS.length} OPEN
+              </span>
+            </div>
+
+            <div className="g4-time-grid">
+              {TIME_SLOTS.map((slot) => (
+                <button
+                  key={slot}
+                  type="button"
+                  disabled={taken.has(slot)}
+                  aria-pressed={time === slot}
+                  className={
+                    time === slot ? "is-selected" : ""
+                  }
+                  onClick={() => {
+                    setTime(slot);
+                    setError("");
+                    setSaved(null);
+                  }}
+                >
+                  <Clock3 size={16} />
+                  {formatTime(slot)}
+
+                  <small>
+                    {taken.has(slot) ? "TAKEN" : "SELECT"}
+                  </small>
+                </button>
+              ))}
+            </div>
+
+            <p className="g4-fine">
+              <ShieldCheck size={16} />
+              A single shared demo schedule is used
+              across all service interests. Occupied slots
+              are local to this browser.
+            </p>
+          </section>
+        </div>
+
+        <aside className="g4-panel g4-calendar-sidebar">
+          <span className="g4-overline">
+            03 / YOUR VISIT FOLIO
+          </span>
+
+          <div className="g4-sidebar-photo">
+            <img
+              src={chosen.image}
+              alt={`Illustrative photograph for ${chosen.name}`}
+            />
+          </div>
+
+          <h2>
+            Choose your <em>chapter.</em>
+          </h2>
+
+          <form onSubmit={submit}>
+            <label
+              className="g4-field"
+              htmlFor="g4-cal-service"
+            >
+              <span>SAMPLE SERVICE</span>
 
               <select
+                id="g4-cal-service"
                 value={serviceId}
                 onChange={(event) => {
                   setServiceId(event.target.value);
+                  setSaved(null);
                   setError("");
-                  setConfirmation(null);
                 }}
               >
-                {SERVICES.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
+                {SERVICES.map((service) => (
+                  <option
+                    key={service.id}
+                    value={service.id}
+                  >
+                    {service.name}
                   </option>
                 ))}
               </select>
             </label>
 
-            <div className="yg2-calendar-card">
-              <div className="yg2-calendar-header">
-                <div>
-                  <span className="yg-overline">
-                    STEP 02 / SELECT A DATE
-                  </span>
-
-                  <h2>{monthTitle}</h2>
-                </div>
-
-                <div className="yg2-month-controls">
-                  <button
-                    type="button"
-                    disabled={displayedMonth <= minMonth}
-                    aria-label="Previous month"
-                    onClick={() => changeMonth(-1)}
-                  >
-                    <ChevronLeft size={21} />
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={displayedMonth >= maxMonth}
-                    aria-label="Next month"
-                    onClick={() => changeMonth(1)}
-                  >
-                    <ChevronRight size={21} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="yg2-weekdays">
-                {[
-                  "Sun",
-                  "Mon",
-                  "Tue",
-                  "Wed",
-                  "Thu",
-                  "Fri",
-                  "Sat",
-                ].map((day) => (
-                  <span key={day}>{day}</span>
-                ))}
-              </div>
-
-              <div
-                className="yg2-calendar-grid"
-                role="group"
-                aria-label="Select consultation date"
-              >
-                {calendarDays.map((day) => {
-                  const withinRange =
-                    day.key >= minDate &&
-                    day.key <= maxDate;
-
-                  const fullyBooked =
-                    (occupiedByDate.get(day.key)?.size ||
-                      0) >= TIME_SLOTS.length;
-
-                  const available =
-                    day.currentMonth &&
-                    withinRange &&
-                    day.weekday !== 0 &&
-                    !fullyBooked;
-
-                  const selected =
-                    selectedDate === day.key;
-
-                  return (
-                    <button
-                      key={day.key}
-                      type="button"
-                      disabled={!available}
-                      aria-pressed={selected}
-                      aria-label={`${formatDate(day.key)}${
-                        fullyBooked ? ", fully booked" : ""
-                      }`}
-                      className={[
-                        "yg2-calendar-day",
-                        selected ? "is-selected" : "",
-                        !day.currentMonth
-                          ? "is-other-month"
-                          : "",
-                      ].join(" ")}
-                      onClick={() =>
-                        chooseDate(day.key)
-                      }
-                    >
-                      <strong>{day.day}</strong>
-
-                      {available && (
-                        <span
-                          className="yg2-day-dot"
-                          aria-hidden="true"
-                        />
-                      )}
-
-                      {fullyBooked &&
-                        day.currentMonth &&
-                        withinRange && (
-                          <small>Full</small>
-                        )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="yg2-calendar-legend">
-                <span>
-                  <i className="yg2-dot-available" />
-                  Available
-                </span>
-
-                <span>
-                  <i className="yg2-dot-selected" />
-                  Selected
-                </span>
-
-                <span>
-                  <i className="yg2-dot-unavailable" />
-                  Unavailable
-                </span>
-              </div>
+            <div className="g4-preview-line">
+              <span>DAY</span>
+              <strong>{formatDate(date)}</strong>
             </div>
 
-            <div className="yg2-times-card">
-              <div className="yg2-times-heading">
-                <div>
-                  <span className="yg-overline">
-                    STEP 03 / SELECT A TIME
-                  </span>
+            <div className="g4-preview-line">
+              <span>TIME</span>
+              <strong>
+                {time ? formatTime(time) : "Not selected"}
+              </strong>
+            </div>
 
-                  <h3>{formatDate(selectedDate)}</h3>
-                </div>
+            <div className="g4-preview-line">
+              <span>ILLUSTRATIVE FEE</span>
+              <strong>{formatPeso(chosen.price)}</strong>
+            </div>
 
-                <span className="yg2-availability">
-                  {availableTimes.length} of{" "}
-                  {TIME_SLOTS.length} slots open
-                </span>
-              </div>
+            <label
+              className="g4-field"
+              htmlFor="g4-cal-alias"
+            >
+              <span>FICTIONAL VISITOR ALIAS</span>
 
-              <div className="yg2-time-grid">
-                {TIME_SLOTS.map((time) => {
-                  const taken =
-                    occupiedTimes.includes(time);
+              <input
+                id="g4-cal-alias"
+                type="text"
+                minLength={2}
+                maxLength={50}
+                required
+                placeholder="Sample Visitor"
+                value={alias}
+                onChange={(event) => {
+                  setAlias(event.target.value);
+                  setError("");
+                }}
+              />
+            </label>
 
-                  return (
-                    <button
-                      key={time}
-                      type="button"
-                      disabled={taken}
-                      aria-pressed={selectedTime === time}
-                      className={
-                        selectedTime === time
-                          ? "is-selected"
-                          : ""
-                      }
-                      onClick={() => chooseTime(time)}
-                    >
-                      <Clock3 size={18} />
-                      <strong>{formatTime(time)}</strong>
-
-                      {taken && <small>TAKEN</small>}
-
-                      {selectedTime === time && (
-                        <CheckCircle2 size={17} />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <p className="yg2-calendar-hint">
-                All times are illustrative. The calendar
-                uses one shared sample consultation
-                resource, not real clinic availability.
+            {error && (
+              <p className="g4-alert" role="alert">
+                {error}
               </p>
-            </div>
-          </div>
+            )}
 
-          <aside className="yg2-booking-sidebar">
-            <div className="yg2-summary-card">
-              <span className="yg-overline">
-                YOUR VISIT / PREVIEW
+            <button
+              className="g4-cta"
+              type="submit"
+              disabled={!time || taken.has(time)}
+            >
+              SAVE DEMO REQUEST
+
+              <span>
+                <ArrowUpRight size={18} />
               </span>
+            </button>
+          </form>
 
-              <h3>
-                A moment
-                <br />
-                <em>just for you.</em>
-              </h3>
+          <p className="g4-fine">
+            <ShieldCheck size={16} />
+            No real booking, medical details or payment
+            is collected.
+          </p>
+        </aside>
+      </div>
 
-              <div className="yg2-summary-image">
-                <img
-                  src={service.image}
-                  alt={`Illustrative skincare imagery for ${service.name}`}
-                  loading="lazy"
-                />
-              </div>
+      {saved && (
+        <div
+          className="g4-wrap g4-success"
+          role="status"
+        >
+          <CheckCircle2 size={30} />
 
-              <div className="yg2-summary-details">
-                <div>
-                  <Sparkles size={17} />
-                  <span>
-                    <small>Service interest</small>
-                    <strong>{service.name}</strong>
-                  </span>
-                </div>
-
-                <div>
-                  <CalendarDays size={17} />
-                  <span>
-                    <small>Preferred date</small>
-                    <strong>
-                      {formatDate(selectedDate)}
-                    </strong>
-                  </span>
-                </div>
-
-                <div>
-                  <Clock3 size={17} />
-                  <span>
-                    <small>Preferred time</small>
-                    <strong>
-                      {selectedTime
-                        ? formatTime(selectedTime)
-                        : "Not selected"}
-                    </strong>
-                  </span>
-                </div>
-              </div>
-
-              <div className="yg2-summary-price">
-                <span>Illustrative fee from</span>
-                <strong>
-                  {formatPeso(service.price)}
-                </strong>
-              </div>
-
-              <form
-                className="yg2-summary-form"
-                onSubmit={handleSubmit}
-              >
-                <label htmlFor="yg2-demo-alias">
-                  DEMO NAME OR ALIAS
-                </label>
-
-                <input
-                  id="yg2-demo-alias"
-                  type="text"
-                  placeholder="e.g. Sample Visitor"
-                  value={alias}
-                  onChange={(event) =>
-                    setAlias(event.target.value)
-                  }
-                  required
-                  minLength={2}
-                  maxLength={50}
-                />
-
-                {error && (
-                  <div
-                    className="yg2-form-error"
-                    role="alert"
-                  >
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className="yg-button"
-                  disabled={
-                    !selectedTime ||
-                    occupiedTimes.includes(selectedTime)
-                  }
-                >
-                  Save Demo Request
-                  <ArrowUpRight size={17} />
-                </button>
-              </form>
-
-              <div className="yg2-sidebar-note">
-                <ShieldCheck size={20} />
-                <p>
-                  This request stays in your browser.
-                  Use a fictional alias, not personal
-                  or medical information.
-                </p>
-              </div>
-            </div>
-          </aside>
-        </div>
-
-        {confirmation && (
-          <section
-            className="yg2-calendar-confirmation"
-            role="status"
-            aria-live="polite"
-          >
-            <CheckCircle2 size={35} />
-
-            <span className="yg-overline">
-              DEMO REQUEST SAVED
+          <div>
+            <span className="g4-overline">
+              SAVED TO THIS BROWSER
             </span>
 
             <h2>
-              A little time
-              <em> set aside.</em>
+              Moment <em>selected.</em>
             </h2>
 
             <p>
-              {confirmation.serviceName} —{" "}
-              {formatDate(confirmation.date)} at{" "}
-              {formatTime(confirmation.time)}
+              {saved.serviceName} ·{" "}
+              {formatDate(saved.date)} ·{" "}
+              {formatTime(saved.time)} · Ref:{" "}
+              <strong>{saved.id}</strong>
             </p>
 
-            <p>
-              Reference: <strong>{confirmation.id}</strong>
-            </p>
+            <p>No real clinic confirmation was issued.</p>
+          </div>
 
-            <Link
-              to="/consultation"
-              className="yg-text-link"
-            >
-              View Saved Demo Requests
-              <ArrowRight size={18} />
-            </Link>
-          </section>
-        )}
-      </section>
-    </div>
+          <Link to="/requests">
+            MANAGE REQUEST
+            <ArrowRight size={17} />
+          </Link>
+        </div>
+      )}
+
+      <div className="g4-calendar-end g4-wrap">
+        <Sparkles size={28} />
+
+        <p>
+          The real next step would always be a conversation
+          with a qualified provider. Explore, ask questions,
+          and proceed only after appropriate assessment.
+        </p>
+
+        <Link to="/treatments">
+          CARE ATLAS
+          <ArrowUpRight size={17} />
+        </Link>
+      </div>
+    </main>
   );
 }

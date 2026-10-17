@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
-
 import {
-  Link,
-} from "react-router-dom";
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import { Link } from "react-router-dom";
 
 import {
   ArrowRight,
@@ -14,8 +16,7 @@ import {
   RotateCcw,
   Search,
   ShieldCheck,
-  Sparkles,
-  Stethoscope,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
 
@@ -29,36 +30,39 @@ import {
   SERVICE_DRAFTS_KEY,
 } from "../../utils/studioOps.js";
 
+import "../../styles/glow-batch5-operations.css";
+
 function readDrafts() {
   try {
-    const result = JSON.parse(
-      localStorage.getItem(SERVICE_DRAFTS_KEY) || "{}"
+    const value = JSON.parse(
+      localStorage.getItem(
+        SERVICE_DRAFTS_KEY
+      ) || "{}"
     );
 
-    return result &&
-      typeof result === "object" &&
-      !Array.isArray(result)
-      ? result
+    return value &&
+      typeof value === "object" &&
+      !Array.isArray(value)
+      ? value
       : {};
   } catch {
     return {};
   }
 }
 
-function effectiveService(service, drafts) {
-  const draft = drafts[service.id] || {};
-
-  const price =
-    typeof draft.price === "number" &&
-    Number.isFinite(draft.price) &&
-    draft.price >= 0
-      ? draft.price
-      : service.price;
+function withDraft(service, drafts) {
+  const draft =
+    drafts[service.id] || {};
 
   return {
     ...service,
 
-    price,
+    price:
+      typeof draft.price === "number" &&
+      Number.isFinite(draft.price) &&
+      draft.price >= 0
+        ? draft.price
+        : service.price,
 
     subtitle:
       typeof draft.subtitle === "string"
@@ -70,20 +74,27 @@ function effectiveService(service, drafts) {
         ? draft.visible
         : true,
 
-    edited: Object.keys(draft).length > 0,
+    edited:
+      Object.keys(draft).length > 0,
   };
 }
 
 export default function ServiceCatalogPage() {
-  const [drafts, setDrafts] = useState(readDrafts);
+  const [drafts, setDrafts] = useState(
+    readDrafts
+  );
 
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [visibility, setVisibility] = useState("all");
+  const [query, setQuery] = useState("");
+  const [category, setCategory] =
+    useState("All");
 
-  const [editingId, setEditingId] = useState(null);
+  const [visibility, setVisibility] =
+    useState("all");
 
-  const [editor, setEditor] = useState({
+  const [editing, setEditing] =
+    useState(null);
+
+  const [form, setForm] = useState({
     price: "",
     subtitle: "",
     visible: true,
@@ -92,105 +103,92 @@ export default function ServiceCatalogPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
+  /* SAVE TO THE ORIGINAL DRAFT KEY */
+
   useEffect(() => {
     try {
       localStorage.setItem(
         SERVICE_DRAFTS_KEY,
         JSON.stringify(drafts)
       );
-    } catch (storageError) {
+    } catch (err) {
       console.warn(
-        "YOUR GLOW draft storage unavailable:",
-        storageError
+        "Unable to store service drafts",
+        err
       );
     }
   }, [drafts]);
 
-  const services = useMemo(
+  const all = useMemo(
     () =>
-      SERVICES.map(
-        (service) =>
-          effectiveService(service, drafts)
+      SERVICES.map((s) =>
+        withDraft(s, drafts)
       ),
     [drafts]
   );
 
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
+  const shown = useMemo(
+    () =>
+      all.filter(
+        (s) =>
+          (category === "All" ||
+            s.category === category) &&
+          (visibility === "all" ||
+            (visibility === "visible"
+              ? s.visible
+              : !s.visible)) &&
+          [
+            s.name,
+            s.category,
+            s.subtitle,
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(
+              query.trim().toLowerCase()
+            )
+      ),
+    [all, category, visibility, query]
+  );
 
-    return services.filter((service) => {
-      const matchesCategory =
-        category === "All" ||
-        service.category === category;
-
-      const matchesVisibility =
-        visibility === "all" ||
-        (visibility === "visible"
-          ? service.visible
-          : !service.visible);
-
-      const matchesSearch =
-        !query ||
-        [
-          service.name,
-          service.category,
-          service.subtitle,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(query);
-
-      return (
-        matchesCategory &&
-        matchesVisibility &&
-        matchesSearch
-      );
-    });
-  }, [services, search, category, visibility]);
-
-  const editedCount = services.filter(
-    (service) => service.edited
+  const editedCount = all.filter(
+    (s) => s.edited
   ).length;
 
-  const plannedHidden = services.filter(
-    (service) => !service.visible
+  const hiddenCount = all.filter(
+    (s) => !s.visible
   ).length;
 
-  function openEditor(service) {
-    if (editingId === service.id) {
-      setEditingId(null);
-      setError("");
-      return;
-    }
+  function edit(service) {
+    setEditing(service.id);
 
-    setEditingId(service.id);
-
-    setEditor({
+    setForm({
       price: String(service.price),
       subtitle: service.subtitle,
       visible: service.visible,
     });
 
-    setError("");
     setNotice("");
+    setError("");
   }
 
-  function saveDraft(event) {
+  function save(event) {
     event.preventDefault();
 
-    if (!editingId) return;
+    const price =
+      Number(form.price);
 
-    const price = Number(editor.price);
-    const subtitle = editor.subtitle.trim();
+    const subtitle =
+      form.subtitle.trim();
 
     if (
-      editor.price.trim() === "" ||
+      !form.price.trim() ||
       !Number.isFinite(price) ||
       price < 0 ||
       price > 1000000
     ) {
       setError(
-        "Enter a valid sample fee between ₱0 and ₱1,000,000."
+        "Enter an illustrative fee between ₱0 and ₱1,000,000."
       );
       return;
     }
@@ -200,400 +198,486 @@ export default function ServiceCatalogPage() {
       subtitle.length > 180
     ) {
       setError(
-        "Description should contain 5 to 180 characters."
+        "Write a sample subtitle between 5 and 180 characters."
       );
       return;
     }
 
-    setDrafts((current) => ({
-      ...current,
-      [editingId]: {
+    setDrafts((old) => ({
+      ...old,
+
+      [editing]: {
         price,
         subtitle,
-        visible: editor.visible,
+        visible: form.visible,
       },
     }));
 
-    setNotice("Staff-only service draft saved locally.");
+    setEditing(null);
     setError("");
-    setEditingId(null);
+
+    setNotice(
+      "Staff-only draft saved in this browser. Public treatment data is unchanged."
+    );
   }
 
-  function resetOne(id) {
+  function restore(id) {
     if (
       !window.confirm(
-        "Reset this service's browser-local draft?"
+        "Restore the original sample service information for this local draft?"
       )
     ) {
       return;
     }
 
-    setDrafts((current) => {
-      const copy = { ...current };
-      delete copy[id];
-      return copy;
+    setDrafts((old) => {
+      const next = {
+        ...old,
+      };
+
+      delete next[id];
+      return next;
     });
 
-    setEditingId(null);
+    setEditing(null);
     setError("");
-    setNotice("Service draft reset.");
+
+    setNotice(
+      "Local service draft restored to its original values."
+    );
   }
 
-  function resetAll() {
+  function restoreAll() {
     if (
       !window.confirm(
-        "Reset all service catalog drafts?"
+        "Clear ALL staff-only catalog drafts from this browser?"
       )
     ) {
       return;
     }
 
     setDrafts({});
-    setEditingId(null);
+    setEditing(null);
     setError("");
-    setNotice("All staff-only service drafts reset.");
+
+    setNotice(
+      "All catalog drafts restored. Original service data remains intact."
+    );
   }
 
   return (
-    <div className="ygs-page">
-      <div className="ygs-page-heading">
-        <div>
-          <span className="ygs-eyebrow">
-            SERVICES / CATALOG MANAGEMENT
+    <div className="g5-ops g5-catalog">
+      {/* HERO */}
+
+      <section className="g5-ops-hero g5-ops-hero--catalog">
+        <div className="g5-ops-hero-copy">
+          <span className="g5-kicker">
+            OPERATIONS / 03 — THE SERVICE ATELIER
           </span>
 
           <h1>
-            The collection,
-            <br />
-            <em>considered in detail.</em>
+            A CARE <em>collection.</em>
           </h1>
 
           <p>
-            Refine the aesthetic studio's sample
-            service descriptions and illustrative
-            pricing in a separate draft workspace.
+            Compose sample pricing,
+            descriptions and planned visibility
+            in a local staff draft workspace.
+            The public treatment atlas stays
+            untouched.
           </p>
+
+          <Link
+            to="/treatments"
+            className="g5-hero-link"
+          >
+            VIEW PUBLIC CARE ATLAS
+            <ArrowUpRight size={17} />
+          </Link>
         </div>
 
-        <Link
-          to="/treatments"
-          className="ygs-primary-button"
+        <div
+          className="g5-catalog-hero-art"
+          aria-hidden="true"
         >
-          <Eye size={18} />
-          View Public Treatments
-          <ArrowUpRight size={17} />
-        </Link>
+          <span className="g5-catalog-sphere" />
+
+          <strong>06</strong>
+
+          <small>
+            STUDIES IN THE COLLECTION
+          </small>
+        </div>
+      </section>
+
+      {/* CATALOG METRICS */}
+
+      <div className="g5-metrics g5-metrics--three">
+        <article>
+          <span>ORIGINAL SERVICES</span>
+          <strong>
+            {SERVICES.length}
+          </strong>
+
+          <small>
+            Central studioData.js records
+          </small>
+        </article>
+
+        <article className="is-lime">
+          <span>LOCAL DRAFTS</span>
+
+          <strong>
+            {editedCount}
+          </strong>
+
+          <small>
+            Saved only in this browser
+          </small>
+        </article>
+
+        <article>
+          <span>PLANNED HIDDEN</span>
+
+          <strong>
+            {hiddenCount}
+          </strong>
+
+          <small>
+            Not applied to public website
+          </small>
+        </article>
       </div>
 
-      <div className="ygs-summary-grid">
-        <article>
-          <Stethoscope size={23} />
-          <strong>{SERVICES.length}</strong>
-          <span>Original sample services</span>
-        </article>
-
-        <article>
-          <Pencil size={23} />
-          <strong>{editedCount}</strong>
-          <span>Edited local drafts</span>
-        </article>
-
-        <article>
-          <EyeOff size={23} />
-          <strong>{plannedHidden}</strong>
-          <span>Planned hidden services</span>
-        </article>
-      </div>
-
-      <section className="ygs-panel">
-        <div className="ygs-panel-heading">
+      <section className="g5-panel">
+        <header className="g5-panel-heading">
           <div>
-            <span className="ygs-eyebrow">
-              SERVICE CATALOG DRAFTS
+            <span className="g5-kicker">
+              THE TREATMENT FOLIOS
             </span>
 
             <h2>
-              Your treatment <em>edit.</em>
+              Edit with <em>intention.</em>
             </h2>
           </div>
 
           <button
+            className="g5-button g5-button--outline"
+            onClick={restoreAll}
+            disabled={!editedCount}
             type="button"
-            className="ygs-secondary-button"
-            disabled={editedCount === 0}
-            onClick={resetAll}
           >
-            <RotateCcw size={17} />
-            Reset All Drafts
+            <RotateCcw size={16} />
+            RESET ALL DRAFTS
           </button>
-        </div>
+        </header>
 
-        <div className="ygs-catalog-filters">
-          <label className="ygs-search-field">
-            <span>SEARCH</span>
+        {/* FILTER CONTROLS */}
+
+        <div className="g5-filters g5-catalog-filters">
+          <label className="g5-filter g5-filter--search">
+            <span>FIND A SERVICE</span>
 
             <div>
-              <Search size={18} />
+              <Search size={17} />
 
               <input
-                type="search"
-                placeholder="Search services..."
-                value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
+                value={query}
+                onChange={(e) =>
+                  setQuery(e.target.value)
                 }
+                type="search"
+                placeholder="Name or description…"
               />
             </div>
           </label>
 
-          <label>
+          <label className="g5-filter">
             <span>CATEGORY</span>
 
             <select
               value={category}
-              onChange={(event) =>
-                setCategory(event.target.value)
+              onChange={(e) =>
+                setCategory(e.target.value)
               }
             >
-              {CATEGORIES.map((item) => (
-                <option key={item} value={item}>
-                  {item}
+              {CATEGORIES.map((c) => (
+                <option key={c}>
+                  {c}
                 </option>
               ))}
             </select>
           </label>
 
-          <label>
+          <label className="g5-filter">
             <span>PLANNED VISIBILITY</span>
 
             <select
               value={visibility}
-              onChange={(event) =>
-                setVisibility(event.target.value)
+              onChange={(e) =>
+                setVisibility(e.target.value)
               }
             >
               <option value="all">
-                All Services
+                All drafts
               </option>
+
               <option value="visible">
-                Planned Visible
+                Planned visible
               </option>
+
               <option value="hidden">
-                Planned Hidden
+                Planned hidden
               </option>
             </select>
           </label>
         </div>
 
         {notice && (
-          <div className="ygs-save-notice" role="status">
-            <CheckCircle2 size={18} />
+          <p
+            className="g5-notice"
+            role="status"
+          >
+            <CheckCircle2 size={17} />
             {notice}
-          </div>
+          </p>
         )}
 
-        {filtered.length === 0 ? (
-          <div className="ygs-empty">
-            <Search size={32} />
+        {/* SERVICE FOLIOS */}
 
-            <h3>No services match.</h3>
+        <div className="g5-catalog-grid">
+          {shown.map((service) => (
+            <article
+              key={service.id}
+              className={`g5-service-folio ${
+                editing === service.id
+                  ? "is-editing"
+                  : ""
+              }`}
+            >
+              <div className="g5-folio-image">
+                <img
+                  src={service.image}
+                  alt={`Illustrative imagery for ${service.name}`}
+                  loading="lazy"
+                />
 
-            <p>
-              Try another category,
-              status or search term.
-            </p>
-          </div>
-        ) : (
-          <div className="ygs-catalog-grid">
-            {filtered.map((service) => (
-              <article
-                key={service.id}
-                className="ygs-catalog-card"
-              >
-                <div className="ygs-catalog-photo">
-                  <img
-                    src={service.image}
-                    alt={`Illustrative ${service.name} imagery`}
-                    loading="lazy"
-                  />
+                <span>
+                  {service.number}
+                  {" / "}
+                  {service.category.toUpperCase()}
+                </span>
+              </div>
 
-                  <span>
-                    {service.category}
+              <div className="g5-folio-content">
+                <div className="g5-folio-tags">
+                  <span
+                    className={
+                      service.visible
+                        ? "is-visible"
+                        : "is-hidden"
+                    }
+                  >
+                    {service.visible ? (
+                      <Eye size={13} />
+                    ) : (
+                      <EyeOff size={13} />
+                    )}
+
+                    {service.visible
+                      ? "PLANNED VISIBLE"
+                      : "PLANNED HIDDEN"}
                   </span>
+
+                  {service.edited && (
+                    <span className="is-draft">
+                      DRAFT EDITED
+                    </span>
+                  )}
                 </div>
 
-                <div className="ygs-catalog-content">
-                  <div className="ygs-catalog-flags">
-                    <span>
-                      {service.number} / 06
-                    </span>
+                <h3>{service.name}</h3>
 
-                    <span
-                      className={
-                        service.visible
-                          ? "is-visible"
-                          : "is-hidden"
-                      }
-                    >
-                      {service.visible
-                        ? "PLANNED VISIBLE"
-                        : "PLANNED HIDDEN"}
-                    </span>
-                  </div>
+                <p>{service.subtitle}</p>
 
-                  <h3>{service.name}</h3>
-                  <p>{service.subtitle}</p>
+                <div className="g5-folio-facts">
+                  <span>
+                    {service.duration} MIN SAMPLE
+                  </span>
 
-                  <div className="ygs-catalog-price">
-                    <span>
-                      Illustrative fee from
-                    </span>
+                  <strong>
+                    {formatPeso(
+                      service.price
+                    )}
+                  </strong>
+                </div>
 
-                    <strong>
-                      {formatPeso(service.price)}
-                    </strong>
-                  </div>
+                <div className="g5-folio-actions">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      editing === service.id
+                        ? setEditing(null)
+                        : edit(service)
+                    }
+                  >
+                    <Pencil size={16} />
 
-                  <div className="ygs-catalog-actions">
+                    {editing === service.id
+                      ? "CLOSE EDITOR"
+                      : "EDIT DRAFT"}
+                  </button>
+
+                  {service.edited && (
                     <button
                       type="button"
                       onClick={() =>
-                        openEditor(service)
+                        restore(service.id)
                       }
                     >
-                      {editingId === service.id
-                        ? <X size={17} />
-                        : <Pencil size={17} />}
-
-                      {editingId === service.id
-                        ? "Close Editor"
-                        : "Edit Draft"}
+                      <RotateCcw size={16} />
+                      RESTORE
                     </button>
-
-                    {service.edited && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          resetOne(service.id)
-                        }
-                      >
-                        <RotateCcw size={16} />
-                        Reset
-                      </button>
-                    )}
-                  </div>
-
-                  {editingId === service.id && (
-                    <form
-                      className="ygs-catalog-editor"
-                      onSubmit={saveDraft}
-                    >
-                      <span className="ygs-eyebrow">
-                        STAFF-ONLY DRAFT
-                      </span>
-
-                      <label>
-                        <span>
-                          SAMPLE STARTING FEE (PHP)
-                        </span>
-
-                        <input
-                          type="number"
-                          min="0"
-                          max="1000000"
-                          step="50"
-                          required
-                          value={editor.price}
-                          onChange={(event) =>
-                            setEditor((current) => ({
-                              ...current,
-                              price: event.target.value,
-                            }))
-                          }
-                        />
-                      </label>
-
-                      <label>
-                        <span>
-                          SHORT DESCRIPTION
-                        </span>
-
-                        <textarea
-                          rows="4"
-                          minLength={5}
-                          maxLength={180}
-                          required
-                          value={editor.subtitle}
-                          onChange={(event) =>
-                            setEditor((current) => ({
-                              ...current,
-                              subtitle: event.target.value,
-                            }))
-                          }
-                        />
-                      </label>
-
-                      <label className="ygs-visibility-choice">
-                        <input
-                          type="checkbox"
-                          checked={editor.visible}
-                          onChange={(event) =>
-                            setEditor((current) => ({
-                              ...current,
-                              visible: event.target.checked,
-                            }))
-                          }
-                        />
-
-                        <span>
-                          Planned visible on a future
-                          public catalog
-                        </span>
-                      </label>
-
-                      {error && (
-                        <div
-                          className="ygs-editor-error"
-                          role="alert"
-                        >
-                          {error}
-                        </div>
-                      )}
-
-                      <button
-                        type="submit"
-                        className="ygs-primary-button"
-                      >
-                        <CheckCircle2 size={17} />
-                        Save Local Draft
-                      </button>
-                    </form>
                   )}
                 </div>
-              </article>
-            ))}
+
+                {/* LOCAL DRAFT EDITOR */}
+
+                {editing === service.id && (
+                  <form
+                    className="g5-folio-editor"
+                    onSubmit={save}
+                  >
+                    <div className="g5-folio-editor-title">
+                      <SlidersHorizontal size={18} />
+
+                      LOCAL-ONLY DRAFT SETTINGS
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditing(null);
+                          setError("");
+                        }}
+                        aria-label="Close editor"
+                      >
+                        <X size={17} />
+                      </button>
+                    </div>
+
+                    <label>
+                      ILLUSTRATIVE FEE (PHP)
+
+                      <input
+                        required
+                        type="number"
+                        min="0"
+                        max="1000000"
+                        step="1"
+                        value={form.price}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            price: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      SHORT SERVICE DESCRIPTION
+
+                      <textarea
+                        required
+                        minLength={5}
+                        maxLength={180}
+                        rows={4}
+                        value={form.subtitle}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            subtitle: e.target.value,
+                          }))
+                        }
+                      />
+                    </label>
+
+                    <label className="g5-visibility-check">
+                      <input
+                        type="checkbox"
+                        checked={form.visible}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            visible:
+                              e.target.checked,
+                          }))
+                        }
+                      />
+
+                      PLANNED VISIBLE IN A FUTURE CATALOG
+                    </label>
+
+                    {error && (
+                      <p
+                        className="g5-form-error"
+                        role="alert"
+                      >
+                        {error}
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="g5-button g5-button--dark"
+                    >
+                      <CheckCircle2 size={17} />
+                      SAVE LOCAL DRAFT
+                    </button>
+                  </form>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {shown.length === 0 && (
+          <div className="g5-empty">
+            <Search size={32} />
+
+            <h3>
+              No services in this view.
+            </h3>
+
+            <p>
+              Try a different filter or search term.
+            </p>
+
+            <button
+              className="g5-button g5-button--dark"
+              type="button"
+              onClick={() => {
+                setQuery("");
+                setCategory("All");
+                setVisibility("all");
+              }}
+            >
+              SHOW ALL
+              <ArrowRight size={15} />
+            </button>
           </div>
         )}
+
+        <p className="g5-disclaimer">
+          <ShieldCheck size={18} />
+
+          Staff drafts use the existing{" "}
+          {SERVICE_DRAFTS_KEY} browser key.
+          Pricing and visibility drafts do not
+          publish changes to the public Atlas,
+          Calendar or real clinic systems.
+        </p>
       </section>
-
-      <div className="ygs-information">
-        <ShieldCheck size={22} />
-
-        <div>
-          <strong>
-            Local drafts are not public updates.
-          </strong>
-
-          <p>
-            Changes are saved in this browser only.
-            The original public Treatments,
-            Treatment Finder, and Calendar continue
-            reading `studioData.js`. Nothing is
-            published, and these settings do not
-            change real service availability.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

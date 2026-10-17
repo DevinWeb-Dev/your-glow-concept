@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-
 import {
   Link,
   useOutletContext,
@@ -9,14 +8,11 @@ import {
   ArrowRight,
   ArrowUpRight,
   CalendarDays,
-  CheckCircle2,
-  ClipboardList,
-  Clock3,
+  ChevronDown,
   Download,
+  FilterX,
   Search,
   ShieldCheck,
-  Sparkles,
-  Trash2,
   XCircle,
 } from "lucide-react";
 
@@ -29,197 +25,231 @@ import {
 import {
   downloadConsultationsCSV,
   findService,
+  todayKey,
 } from "../../utils/studioOps.js";
+
+import "../../styles/glow-batch5-operations.css";
+
+const nameOf = (id) =>
+  findService(id)?.name ||
+  "Unknown sample service";
 
 export default function ConsultationDeskPage() {
   const {
-    bookings,
+    bookings = [],
     onCancelBooking,
   } = useOutletContext();
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [serviceId, setServiceId] = useState("all");
-  const [date, setDate] = useState("");
+  const [day, setDay] = useState("");
+  const [order, setOrder] = useState("soonest");
+  const [expanded, setExpanded] = useState(null);
 
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    return bookings
-      .filter((booking) => {
-        if (
-          status !== "all" &&
-          booking.status !== status
-        ) {
-          return false;
-        }
-
-        if (
-          serviceId !== "all" &&
-          booking.serviceId !== serviceId
-        ) {
-          return false;
-        }
-
-        if (
-          date &&
-          booking.date !== date
-        ) {
-          return false;
-        }
-
-        const serviceName =
-          findService(booking.serviceId)?.name || "";
-
-        const content = [
-          booking.id,
-          booking.alias,
-          booking.date,
-          booking.time,
-          serviceName,
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return content.includes(query);
-      })
-      .sort((a, b) =>
-        `${a.date} ${a.time}`.localeCompare(
-          `${b.date} ${b.time}`
+  const filtered = useMemo(
+    () =>
+      bookings
+        .filter(
+          (b) =>
+            status === "all" ||
+            b.status === status
         )
-      );
-  }, [bookings, search, status, serviceId, date]);
+        .filter(
+          (b) =>
+            serviceId === "all" ||
+            b.serviceId === serviceId
+        )
+        .filter(
+          (b) =>
+            !day || b.date === day
+        )
+        .filter((b) =>
+          [
+            b.id,
+            b.alias,
+            b.date,
+            b.time,
+            nameOf(b.serviceId),
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(search.trim().toLowerCase())
+        )
+        .sort((a, b) =>
+          order === "soonest"
+            ? `${a.date} ${a.time}`.localeCompare(
+                `${b.date} ${b.time}`
+              )
+            : `${b.date} ${b.time}`.localeCompare(
+                `${a.date} ${a.time}`
+              )
+        ),
+    [bookings, search, status, serviceId, day, order]
+  );
 
-  const activeCount = bookings.filter(
-    (item) => item.status === "requested"
+  const requested = bookings.filter(
+    (b) => b.status === "requested"
   ).length;
 
-  const cancelledCount = bookings.filter(
-    (item) => item.status === "cancelled"
+  const cancelled = bookings.filter(
+    (b) => b.status === "cancelled"
   ).length;
 
-  function resetFilters() {
+  const today = todayKey();
+
+  const todayCount = bookings.filter(
+    (b) =>
+      b.status === "requested" &&
+      b.date === today
+  ).length;
+
+  const clear = () => {
     setSearch("");
     setStatus("all");
     setServiceId("all");
-    setDate("");
-  }
-
-  function exportCSV() {
-    downloadConsultationsCSV(
-      filtered,
-      "your-glow-filtered-demo-consultations.csv"
-    );
-  }
+    setDay("");
+    setOrder("soonest");
+  };
 
   return (
-    <div className="ygs-page">
-      <div className="ygs-page-heading">
-        <div>
-          <span className="ygs-eyebrow">
-            CONSULTATIONS / OPERATIONS
+    <div className="g5-ops g5-desk">
+      {/* ARCHITECTURAL HERO */}
+
+      <section className="g5-ops-hero g5-ops-hero--desk">
+        <div className="g5-ops-hero-copy">
+          <span className="g5-kicker">
+            OPERATIONS / 01 — THE CONSULTATION DESK
           </span>
 
           <h1>
-            Every visit,
-            <br />
-            <em>beautifully planned.</em>
+            THE DAILY <em>flow.</em>
           </h1>
 
           <p>
-            Manage sample consultation requests
-            and keep the studio's fictional
-            appointments organized.
+            A focused view of fictional requests,
+            each stored only in this browser.
+            Search, inspect, export and cancel
+            without altering the public booking
+            engine.
           </p>
+
+          <Link
+            className="g5-hero-link"
+            to="/calendar"
+          >
+            OPEN THE PUBLIC CALENDAR
+            <ArrowUpRight size={17} />
+          </Link>
         </div>
 
-        <Link
-          className="ygs-primary-button"
-          to="/calendar"
+        <div
+          className="g5-desk-hero-art"
+          aria-hidden="true"
         >
-          <CalendarDays size={18} />
-          New Demo Request
-          <ArrowUpRight size={17} />
-        </Link>
+          <span className="g5-orbit g5-orbit--one" />
+          <span className="g5-orbit g5-orbit--two" />
+
+          <strong>01.</strong>
+
+          <small>
+            ALWAYS ROOM FOR CLARITY
+          </small>
+        </div>
+      </section>
+
+      {/* METRICS */}
+
+      <div className="g5-metrics g5-metrics--four">
+        {[
+          ["TOTAL ENTRIES", bookings.length],
+          ["REQUESTED", requested],
+          ["CANCELLED", cancelled],
+          ["ON TODAY'S DEMO BOARD", todayCount],
+        ].map(([label, number], index) => (
+          <article
+            key={label}
+            className={
+              index === 1 ? "is-lime" : ""
+            }
+          >
+            <span>{label}</span>
+
+            <strong>
+              {String(number).padStart(2, "0")}
+            </strong>
+
+            <small>
+              {index === 1
+                ? "Awaiting demo action"
+                : "Fictional records only"}
+            </small>
+          </article>
+        ))}
       </div>
 
-      <div className="ygs-summary-grid">
-        <article>
-          <ClipboardList size={23} />
+      {/* WORKSPACE */}
 
-          <strong>{bookings.length}</strong>
-
-          <span>Total demo requests</span>
-        </article>
-
-        <article>
-          <CheckCircle2 size={23} />
-
-          <strong>{activeCount}</strong>
-
-          <span>Active requests</span>
-        </article>
-
-        <article>
-          <XCircle size={23} />
-
-          <strong>{cancelledCount}</strong>
-
-          <span>Cancelled requests</span>
-        </article>
-      </div>
-
-      <section className="ygs-panel">
-        <div className="ygs-panel-heading">
+      <section className="g5-panel g5-desk-workspace">
+        <header className="g5-panel-heading">
           <div>
-            <span className="ygs-eyebrow">
-              THE CONSULTATION DESK
+            <span className="g5-kicker">
+              THE CONSULTATION LEDGER
             </span>
 
             <h2>
-              Request <em>management.</em>
+              A considered <em>overview.</em>
             </h2>
           </div>
 
           <button
+            className="g5-button g5-button--dark"
             type="button"
-            className="ygs-secondary-button"
-            onClick={exportCSV}
+            onClick={() =>
+              downloadConsultationsCSV(
+                filtered,
+                "your-glow-consultation-desk-demo.csv"
+              )
+            }
+            disabled={filtered.length === 0}
           >
             <Download size={17} />
-            Export Filtered CSV
+            EXPORT VIEW ({filtered.length})
           </button>
-        </div>
+        </header>
 
-        <div className="ygs-filters">
-          <label className="ygs-search-field">
-            <span>SEARCH REQUESTS</span>
+        {/* FILTERS */}
+
+        <div className="g5-filters">
+          <label className="g5-filter g5-filter--search">
+            <span>SEARCH THE LEDGER</span>
 
             <div>
-              <Search size={18} />
+              <Search size={17} />
 
               <input
+                aria-label="Search demo bookings"
                 type="search"
-                placeholder="Alias, reference, treatment..."
                 value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
+                onChange={(e) =>
+                  setSearch(e.target.value)
                 }
+                placeholder="Alias, reference, service…"
               />
             </div>
           </label>
 
-          <label>
+          <label className="g5-filter">
             <span>STATUS</span>
 
             <select
               value={status}
-              onChange={(event) =>
-                setStatus(event.target.value)
+              onChange={(e) =>
+                setStatus(e.target.value)
               }
             >
               <option value="all">
-                All statuses
+                Every status
               </option>
 
               <option value="requested">
@@ -232,186 +262,223 @@ export default function ConsultationDeskPage() {
             </select>
           </label>
 
-          <label>
-            <span>SAMPLE SERVICE</span>
+          <label className="g5-filter">
+            <span>SERVICE</span>
 
             <select
               value={serviceId}
-              onChange={(event) =>
-                setServiceId(event.target.value)
+              onChange={(e) =>
+                setServiceId(e.target.value)
               }
             >
               <option value="all">
-                All services
+                All care studies
               </option>
 
-              {SERVICES.map((service) => (
+              {SERVICES.map((s) => (
                 <option
-                  key={service.id}
-                  value={service.id}
+                  value={s.id}
+                  key={s.id}
                 >
-                  {service.name}
+                  {s.name}
                 </option>
               ))}
             </select>
           </label>
 
-          <label>
-            <span>REQUESTED DATE</span>
+          <label className="g5-filter">
+            <span>DEMO DATE</span>
 
             <input
+              aria-label="Filter by date"
               type="date"
-              value={date}
-              onChange={(event) =>
-                setDate(event.target.value)
+              value={day}
+              onChange={(e) =>
+                setDay(e.target.value)
               }
             />
           </label>
-        </div>
 
-        <div className="ygs-results-line">
-          <span>
-            Showing {filtered.length} of{" "}
-            {bookings.length} demo records
-          </span>
+          <label className="g5-filter">
+            <span>ORDER</span>
+
+            <select
+              value={order}
+              onChange={(e) =>
+                setOrder(e.target.value)
+              }
+            >
+              <option value="soonest">
+                Earliest first
+              </option>
+
+              <option value="latest">
+                Latest first
+              </option>
+            </select>
+          </label>
 
           <button
+            className="g5-button g5-button--outline"
             type="button"
-            onClick={resetFilters}
+            onClick={clear}
           >
-            Clear all filters
-            <ArrowRight size={16} />
+            <FilterX size={17} />
+            RESET
           </button>
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="ygs-empty">
-            <ClipboardList size={34} />
+        <div className="g5-ledger-meta">
+          <span>
+            {filtered.length} MATCHING DEMO RECORDS
+          </span>
 
-            <h3>No matching consultations.</h3>
+          <span>
+            SELECT AN ENTRY TO SEE MORE
+            <ChevronDown size={15} />
+          </span>
+        </div>
+
+        {/* EMPTY STATE */}
+
+        {filtered.length === 0 ? (
+          <div className="g5-empty">
+            <CalendarDays size={34} />
+
+            <h3>
+              No entries in this edit.
+            </h3>
 
             <p>
-              Try another filter, or create a new
-              fictional consultation request.
+              Adjust the filters or create a
+              fictional request in the public
+              calendar.
             </p>
 
             <button
+              className="g5-button g5-button--dark"
+              onClick={clear}
               type="button"
-              className="ygs-secondary-button"
-              onClick={resetFilters}
             >
-              Reset Filters
-              <ArrowRight size={16} />
+              RESET FILTERS
+              <ArrowRight size={15} />
             </button>
           </div>
         ) : (
-          <div className="ygs-desk-list">
-            {filtered.map((booking) => {
-              const service = findService(
-                booking.serviceId
-              );
-
-              const cancelled =
-                booking.status === "cancelled";
+          <div className="g5-ledger-list">
+            {filtered.map((b, i) => {
+              const open = expanded === b.id;
 
               return (
                 <article
-                  className="ygs-desk-card"
-                  key={booking.id}
+                  className={`g5-ledger-entry ${
+                    open ? "is-open" : ""
+                  }`}
+                  key={b.id}
                 >
-                  <div className="ygs-desk-top">
-                    <span className="ygs-reference">
-                      {booking.id}
+                  <button
+                    type="button"
+                    className="g5-ledger-summary"
+                    aria-expanded={open}
+                    onClick={() =>
+                      setExpanded(
+                        open ? null : b.id
+                      )
+                    }
+                  >
+                    <span className="g5-ledger-index">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+
+                    <span className="g5-ledger-identity">
+                      <small>{b.id}</small>
+                      <strong>
+                        {nameOf(b.serviceId)}
+                      </strong>
+                      <span>
+                        {b.alias || "Demo visitor"}
+                      </span>
+                    </span>
+
+                    <span className="g5-ledger-visit">
+                      <CalendarDays size={15} />
+                      {formatDate(b.date)}
+                      <small>
+                        {formatTime(b.time)}
+                      </small>
                     </span>
 
                     <span
-                      className={`ygs-status ${
-                        cancelled
-                          ? "is-cancelled"
+                      className={`g5-state ${
+                        b.status === "requested"
+                          ? "is-active"
                           : ""
                       }`}
                     >
-                      {cancelled
-                        ? "Cancelled"
-                        : "Demo Requested"}
-                    </span>
-                  </div>
-
-                  <div className="ygs-desk-body">
-                    <span className="ygs-desk-icon">
-                      <Sparkles size={23} />
+                      {b.status.toUpperCase()}
                     </span>
 
-                    <div className="ygs-desk-details">
-                      <h3>
-                        {service?.name ||
-                          "Skin Consultation"}
-                      </h3>
+                    <ChevronDown
+                      className="g5-ledger-chevron"
+                      size={19}
+                    />
+                  </button>
 
-                      <strong>
-                        Demo alias: {booking.alias}
-                      </strong>
-
-                      <div className="ygs-desk-meta">
-                        <span>
-                          <CalendarDays size={16} />
-                          {formatDate(booking.date)}
-                        </span>
-
-                        <span>
-                          <Clock3 size={16} />
-                          {formatTime(booking.time)}
-                        </span>
-
-                        <span>
-                          <ShieldCheck size={16} />
-                          Browser-local demo
-                        </span>
+                  {open && (
+                    <div className="g5-ledger-expanded">
+                      <div>
+                        <span>DEMO REFERENCE</span>
+                        <strong>{b.id}</strong>
                       </div>
+
+                      <div>
+                        <span>CREATED</span>
+                        <strong>
+                          {b.createdAt
+                            ? new Date(
+                                b.createdAt
+                              ).toLocaleString("en-PH")
+                            : "Not recorded"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>STATUS</span>
+                        <strong>
+                          {b.status === "requested"
+                            ? "Request stored — unconfirmed"
+                            : "Request cancelled"}
+                        </strong>
+                      </div>
+
+                      {b.status === "requested" && (
+                        <button
+                          type="button"
+                          className="g5-cancel"
+                          onClick={() =>
+                            onCancelBooking(b.id)
+                          }
+                        >
+                          <XCircle size={17} />
+                          CANCEL DEMO REQUEST
+                        </button>
+                      )}
                     </div>
-                  </div>
-
-                  <div className="ygs-desk-footer">
-                    <span>
-                      No actual appointment
-                      confirmation or payment
-                    </span>
-
-                    {!cancelled && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onCancelBooking(booking.id)
-                        }
-                      >
-                        <Trash2 size={17} />
-                        Cancel Demo Request
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </article>
               );
             })}
           </div>
         )}
+
+        <p className="g5-disclaimer">
+          <ShieldCheck size={18} />
+          Demo data only. CSV contains local
+          fictional aliases; do not use this
+          workspace for real patients or
+          sensitive medical information.
+        </p>
       </section>
-
-      <div className="ygs-information">
-        <ShieldCheck size={22} />
-
-        <div>
-          <strong>
-            Local demonstration, not a patient portal.
-          </strong>
-
-          <p>
-            CSV exports contain fictional aliases
-            and demo appointment selections. Do not
-            use this page to manage real clients or
-            sensitive medical information.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { Link, useOutletContext } from "react-router-dom";
+
+import {
+  Link,
+  useOutletContext,
+} from "react-router-dom";
 
 import {
   ArrowRight,
-  CalendarDays,
   CheckCircle2,
   Database,
   Download,
@@ -34,9 +37,11 @@ import {
   saveAsFile,
 } from "../../utils/studioInsights.js";
 
-const MAX_BACKUP_SIZE = 1024 * 1024;
+import "../../styles/glow-batch6-final.css";
 
-const SETTING_LIMITS = {
+const MAX_BYTES = 1024 * 1024;
+
+const SETTINGS_LIMITS = {
   studioName: 100,
   tagline: 180,
   locationLabel: 140,
@@ -46,15 +51,16 @@ const SETTING_LIMITS = {
   conceptNotes: 700,
 };
 
-function isObject(value) {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    !Array.isArray(value)
-  );
-}
+const SERVICE_IDS = new Set(
+  SERVICES.map((item) => item.id)
+);
 
-function validDate(value) {
+const isObject = (value) =>
+  Boolean(value) &&
+  typeof value === "object" &&
+  !Array.isArray(value);
+
+function isValidDay(value) {
   if (
     typeof value !== "string" ||
     !/^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -62,10 +68,12 @@ function validDate(value) {
     return false;
   }
 
-  const date = new Date(`${value}T12:00:00`);
+  const date = new Date(
+    `${value}T12:00:00`
+  );
 
   return (
-    !Number.isNaN(date.getTime()) &&
+    Number.isFinite(date.getTime()) &&
     localDateKey(date) === value &&
     date.getDay() !== 0
   );
@@ -78,7 +86,7 @@ function validateBackup(input) {
     input.version !== 1
   ) {
     throw new Error(
-      "Invalid YOUR GLOW backup format."
+      "Not a supported YOUR GLOW v1 backup."
     );
   }
 
@@ -87,7 +95,7 @@ function validateBackup(input) {
     input.bookings.length > 500
   ) {
     throw new Error(
-      "Backup must contain up to 500 demo requests."
+      "A backup must contain 0–500 demo requests."
     );
   }
 
@@ -96,22 +104,18 @@ function validateBackup(input) {
     !isObject(input.serviceDrafts)
   ) {
     throw new Error(
-      "Invalid studio settings or service drafts."
+      "Settings and service drafts must be JSON objects."
     );
   }
 
-  const serviceIds = new Set(
-    SERVICES.map((service) => service.id)
-  );
-
-  const references = new Set();
-  const occupiedSlots = new Set();
+  const seenIds = new Set();
+  const occupied = new Set();
 
   const bookings = input.bookings.map(
     (item, index) => {
       if (!isObject(item)) {
         throw new Error(
-          `Request ${index + 1} is invalid.`
+          `Request ${index + 1} is not an object.`
         );
       }
 
@@ -127,12 +131,12 @@ function validateBackup(input) {
 
       if (
         typeof id !== "string" ||
-        id.length < 1 ||
+        !id.trim() ||
         id.length > 120 ||
-        references.has(id)
+        seenIds.has(id)
       ) {
         throw new Error(
-          "Invalid or duplicate request reference."
+          "Invalid or duplicate demo reference."
         );
       }
 
@@ -142,34 +146,32 @@ function validateBackup(input) {
         alias.length > 50
       ) {
         throw new Error(
-          "A request contains an invalid demo alias."
+          "An entry has an invalid demo alias."
         );
       }
 
-      if (!serviceIds.has(serviceId)) {
+      if (!SERVICE_IDS.has(serviceId)) {
         throw new Error(
-          "A request contains an unknown service."
-        );
-      }
-
-      if (!validDate(date)) {
-        throw new Error(
-          "A request has an invalid appointment date."
-        );
-      }
-
-      if (!TIME_SLOTS.includes(time)) {
-        throw new Error(
-          "A request has an invalid time slot."
+          "An entry has an unknown sample service."
         );
       }
 
       if (
-        status !== "requested" &&
-        status !== "cancelled"
+        !isValidDay(date) ||
+        !TIME_SLOTS.includes(time)
       ) {
         throw new Error(
-          "A request contains an invalid status."
+          "Invalid sample visit date or time."
+        );
+      }
+
+      if (
+        !["requested", "cancelled"].includes(
+          status
+        )
+      ) {
+        throw new Error(
+          "Invalid request status."
         );
       }
 
@@ -181,22 +183,22 @@ function validateBackup(input) {
         )
       ) {
         throw new Error(
-          "Invalid request creation timestamp."
+          "Invalid creation timestamp."
         );
       }
 
-      references.add(id);
+      seenIds.add(id);
 
       if (status === "requested") {
-        const slotKey = `${date}|${time}`;
+        const slot = `${date}|${time}`;
 
-        if (occupiedSlots.has(slotKey)) {
+        if (occupied.has(slot)) {
           throw new Error(
-            "Backup contains overlapping active consultation slots."
+            "Two active requests overlap the same sample slot."
           );
         }
 
-        occupiedSlots.add(slotKey);
+        occupied.add(slot);
       }
 
       return {
@@ -214,16 +216,20 @@ function validateBackup(input) {
   const studioSettings = {};
 
   for (
-    const [key, maxLength]
-    of Object.entries(SETTING_LIMITS)
+    const [key, limit] of Object.entries(
+      SETTINGS_LIMITS
+    )
   ) {
-    const value = input.studioSettings[key];
+    const value =
+      input.studioSettings[key];
 
-    if (value === undefined) continue;
+    if (value === undefined) {
+      continue;
+    }
 
     if (
       typeof value !== "string" ||
-      value.length > maxLength
+      value.length > limit
     ) {
       throw new Error(
         `Invalid studio setting: ${key}.`
@@ -236,19 +242,20 @@ function validateBackup(input) {
   const serviceDrafts = {};
 
   for (
-    const [id, draft]
-    of Object.entries(input.serviceDrafts)
+    const [id, draft] of Object.entries(
+      input.serviceDrafts
+    )
   ) {
     if (
-      !serviceIds.has(id) ||
+      !SERVICE_IDS.has(id) ||
       !isObject(draft)
     ) {
       throw new Error(
-        "Unknown service catalog draft."
+        "Backup includes an invalid service draft."
       );
     }
 
-    const normalized = {};
+    const next = {};
 
     if (draft.price !== undefined) {
       if (
@@ -258,11 +265,11 @@ function validateBackup(input) {
         draft.price > 1000000
       ) {
         throw new Error(
-          "Invalid draft service price."
+          "Invalid sample service fee."
         );
       }
 
-      normalized.price = draft.price;
+      next.price = draft.price;
     }
 
     if (draft.subtitle !== undefined) {
@@ -272,24 +279,26 @@ function validateBackup(input) {
         draft.subtitle.length > 180
       ) {
         throw new Error(
-          "Invalid draft service description."
+          "Invalid sample subtitle."
         );
       }
 
-      normalized.subtitle = draft.subtitle;
+      next.subtitle = draft.subtitle;
     }
 
     if (draft.visible !== undefined) {
-      if (typeof draft.visible !== "boolean") {
+      if (
+        typeof draft.visible !== "boolean"
+      ) {
         throw new Error(
-          "Invalid draft visibility setting."
+          "Invalid planned visibility flag."
         );
       }
 
-      normalized.visible = draft.visible;
+      next.visible = draft.visible;
     }
 
-    serviceDrafts[id] = normalized;
+    serviceDrafts[id] = next;
   }
 
   return {
@@ -301,27 +310,30 @@ function validateBackup(input) {
 
 export default function StudioDataCenterPage() {
   const {
-    bookings,
+    bookings = [],
     onReplaceBookings,
   } = useOutletContext();
 
-  const [pendingBackup, setPendingBackup] =
+  const [pending, setPending] =
     useState(null);
 
-  const [restoreWord, setRestoreWord] =
+  const [restorePhrase, setRestorePhrase] =
     useState("");
 
-  const [resetWord, setResetWord] =
+  const [resetPhrase, setResetPhrase] =
     useState("");
 
-  const [notice, setNotice] = useState("");
-  const [error, setError] = useState("");
+  const [notice, setNotice] =
+    useState("");
 
-  const activeCount = bookings.filter(
+  const [error, setError] =
+    useState("");
+
+  const active = bookings.filter(
     (item) => item.status === "requested"
   ).length;
 
-  function downloadBackup() {
+  function exportJson() {
     const payload = {
       format: BACKUP_FORMAT,
       version: 1,
@@ -334,7 +346,8 @@ export default function StudioDataCenterPage() {
         date: item.date,
         time: item.time,
         status: item.status,
-        createdAt: item.createdAt || "",
+        createdAt:
+          item.createdAt || "",
       })),
 
       studioSettings: readLocalObject(
@@ -346,77 +359,102 @@ export default function StudioDataCenterPage() {
       ),
     };
 
-    saveAsFile(
-      JSON.stringify(payload, null, 2),
-      "your-glow-demo-backup.json",
-      "application/json;charset=utf-8"
-    );
+    try {
+      saveAsFile(
+        JSON.stringify(
+          payload,
+          null,
+          2
+        ),
+        "your-glow-demo-backup.json",
+        "application/json;charset=utf-8"
+      );
 
-    setNotice("JSON backup download started.");
-    setError("");
+      setNotice(
+        "JSON download initiated. Keep it in a safe place."
+      );
+
+      setError("");
+    } catch {
+      setError(
+        "Could not create the JSON backup."
+      );
+    }
   }
 
-  function downloadCSV() {
-    downloadConsultationsCSV(
-      bookings,
-      "your-glow-all-demo-consultations.csv"
-    );
+  function exportCsv() {
+    try {
+      downloadConsultationsCSV(
+        bookings,
+        "your-glow-demo-requests.csv"
+      );
 
-    setNotice("CSV export download started.");
-    setError("");
+      setNotice(
+        "CSV download initiated."
+      );
+
+      setError("");
+    } catch {
+      setError(
+        "Could not export the CSV."
+      );
+    }
   }
 
-  async function selectBackup(event) {
-    const file = event.target.files?.[0];
+  async function selectFile(event) {
+    const file =
+      event.target.files?.[0];
 
     event.target.value = "";
 
-    setPendingBackup(null);
-    setRestoreWord("");
+    setPending(null);
+    setRestorePhrase("");
     setNotice("");
     setError("");
 
     if (!file) return;
 
-    if (file.size > MAX_BACKUP_SIZE) {
+    if (file.size > MAX_BYTES) {
       setError(
-        "The backup exceeds the 1 MB import limit."
+        "Choose a JSON backup smaller than 1 MB."
       );
       return;
     }
 
     try {
-      const contents = await file.text();
+      const contents =
+        await file.text();
 
-      const parsed = JSON.parse(contents);
+      const backup =
+        validateBackup(
+          JSON.parse(contents)
+        );
 
-      const validated = validateBackup(parsed);
-
-      setPendingBackup(validated);
+      setPending(backup);
 
       setNotice(
-        "Backup validated. Review the details before restoring."
+        "Backup passed validation. Review before restoring."
       );
-    } catch (problem) {
+    } catch (reason) {
       setError(
-        problem instanceof Error
-          ? problem.message
-          : "Unable to read the backup."
+        reason instanceof Error
+          ? reason.message
+          : "Unable to validate the backup."
       );
     }
   }
 
-  function restoreBackup() {
+  function restore() {
     if (
-      !pendingBackup ||
-      restoreWord !== "RESTORE"
+      !pending ||
+      restorePhrase !== "RESTORE"
     ) {
       return;
     }
 
     if (
       !window.confirm(
-        "Replace current fictional consultation requests, studio settings and service drafts with this backup?"
+        "Replace this browser's demo bookings, studio profile and catalog drafts with the selected backup?"
       )
     ) {
       return;
@@ -428,70 +466,81 @@ export default function StudioDataCenterPage() {
       SERVICE_DRAFTS_KEY,
     ];
 
-    const previous = {};
+    const before = {};
 
     try {
       for (const key of keys) {
-        previous[key] = localStorage.getItem(key);
+        before[key] =
+          localStorage.getItem(key);
       }
 
-      const updates = {
-        [BOOKINGS_KEY]:
-          pendingBackup.bookings,
+      localStorage.setItem(
+        BOOKINGS_KEY,
+        JSON.stringify(
+          pending.bookings
+        )
+      );
 
-        [STUDIO_SETTINGS_KEY]:
-          pendingBackup.studioSettings,
+      localStorage.setItem(
+        STUDIO_SETTINGS_KEY,
+        JSON.stringify(
+          pending.studioSettings
+        )
+      );
 
-        [SERVICE_DRAFTS_KEY]:
-          pendingBackup.serviceDrafts,
-      };
+      localStorage.setItem(
+        SERVICE_DRAFTS_KEY,
+        JSON.stringify(
+          pending.serviceDrafts
+        )
+      );
 
-      for (const key of keys) {
-        localStorage.setItem(
-          key,
-          JSON.stringify(updates[key])
-        );
-      }
+      onReplaceBookings(
+        pending.bookings
+      );
 
-      // Keep React and localStorage in sync.
-      onReplaceBookings(pendingBackup.bookings);
+      setPending(null);
+      setRestorePhrase("");
 
       setNotice(
-        "Demo backup restored successfully. Other staff pages will display the restored information."
+        "Backup restored. Reload Settings or Catalog to see their restored local drafts."
       );
 
       setError("");
-      setPendingBackup(null);
-      setRestoreWord("");
     } catch {
-      // Best-effort rollback of previous values.
       for (const key of keys) {
         try {
-          if (previous[key] === null) {
-            localStorage.removeItem(key);
-          } else if (previous[key] !== undefined) {
+          if (before[key] === null) {
+            localStorage.removeItem(
+              key
+            );
+          } else if (
+            before[key] !== undefined
+          ) {
             localStorage.setItem(
               key,
-              previous[key]
+              before[key]
             );
           }
         } catch {
-          // Browser storage may be unavailable.
+          // Browser storage can fail.
         }
       }
 
       setError(
-        "Unable to restore this backup. Existing data was preserved where possible."
+        "Restore failed. Previous browser values were restored where possible."
       );
     }
   }
 
-  function resetRequests() {
-    if (resetWord !== "RESET") return;
+  function clearRequests() {
+    if (resetPhrase !== "RESET") {
+      return;
+    }
 
     if (
       !window.confirm(
-        "Permanently clear this browser's demo consultation requests? Export a backup first if you want to keep them."
+        "Delete all demo request records in this browser? This cannot be undone without a backup."
       )
     ) {
       return;
@@ -500,284 +549,331 @@ export default function StudioDataCenterPage() {
     try {
       localStorage.setItem(
         BOOKINGS_KEY,
-        JSON.stringify([])
+        "[]"
       );
 
       onReplaceBookings([]);
 
-      setResetWord("");
+      setResetPhrase("");
+
       setNotice(
-        "All demo consultations cleared. Studio settings and service drafts remain saved."
+        "Demo request history cleared. Profile and catalog drafts were not changed."
       );
+
       setError("");
     } catch {
       setError(
-        "Unable to clear demo bookings from browser storage."
+        "Could not reset demo bookings."
       );
     }
   }
 
   return (
-    <div className="ygs-page ygi-page">
-      <div className="ygs-page-heading">
+    <main className="g6 g6-vault">
+      <header className="g6-hero">
         <div>
-          <span className="ygs-eyebrow">
-            DATA MANAGEMENT / LOCAL DEMO
+          <span className="g6-kicker">
+            STUDIO INFRASTRUCTURE /
+            04 — LOCAL VAULT
           </span>
 
           <h1>
-            Your studio data.
-            <br />
-            <em>In your hands.</em>
+            Keep the <em>details.</em>
           </h1>
 
           <p>
-            Keep local backups, restore sample
-            consultation records and reset the
-            prototype when needed.
+            Safeguard, restore or clear
+            fictional demo records.
+            Everything is managed locally
+            in this browser; no external
+            database is connected.
           </p>
         </div>
 
-        <span className="ygi-local-label">
-          <Database size={18} />
-          BROWSER-LOCAL STORAGE
-        </span>
+        <div
+          className="g6-hero-art"
+          aria-hidden="true"
+        >
+          <Database
+            size={92}
+            strokeWidth={0.8}
+          />
+
+          <small>
+            THE DATA ATELIER / 006
+          </small>
+        </div>
+      </header>
+
+      <div className="g6-kpis g6-kpis--three">
+        <article>
+          <div>
+            <span>
+              TOTAL REQUESTS
+            </span>
+
+            <FileJson size={20} />
+          </div>
+
+          <strong>
+            {bookings.length}
+          </strong>
+
+          <p>
+            Saved in this browser
+          </p>
+        </article>
+
+        <article className="g6-kpi-feature">
+          <div>
+            <span>
+              REQUESTED
+            </span>
+
+            <CheckCircle2 size={20} />
+          </div>
+
+          <strong>{active}</strong>
+
+          <p>
+            Not confirmed appointments
+          </p>
+        </article>
+
+        <article>
+          <div>
+            <span>
+              DATA CATEGORIES
+            </span>
+
+            <Database size={20} />
+          </div>
+
+          <strong>03</strong>
+
+          <p>
+            Bookings · Studio · Services
+          </p>
+        </article>
       </div>
 
-      <div className="ygi-data-summary">
-        <article>
-          <CalendarDays size={23} />
-          <strong>{bookings.length}</strong>
-          <span>Stored demo requests</span>
-        </article>
+      <div className="g6-vault-grid">
+        <section className="g6-panel g6-vault-card">
+          <div className="g6-vault-icon">
+            <Download size={26} />
+          </div>
 
-        <article>
-          <CheckCircle2 size={23} />
-          <strong>{activeCount}</strong>
-          <span>Active demo requests</span>
-        </article>
-
-        <article>
-          <Database size={23} />
-          <strong>3</strong>
-          <span>Demo data categories</span>
-        </article>
-      </div>
-
-      <div className="ygi-data-grid">
-        <section className="ygs-panel ygi-data-card">
-          <span className="ygi-data-icon">
-            <Download size={25} />
-          </span>
-
-          <span className="ygs-eyebrow">
+          <span className="g6-kicker">
             01 / EXPORT
           </span>
 
           <h2>
-            Keep a <em>copy.</em>
+            Save a <em>copy.</em>
           </h2>
 
           <p>
-            Download your fictional consultation
-            history, studio settings and service
-            catalog drafts in one JSON file.
+            Download a YOUR GLOW v1
+            JSON file containing demo
+            requests, studio settings
+            and service drafts.
+            Export a separate CSV of
+            bookings if preferred.
           </p>
 
           <button
+            onClick={exportJson}
             type="button"
-            className="ygs-primary-button"
-            onClick={downloadBackup}
           >
-            <FileJson size={18} />
-            Export JSON Backup
+            <FileJson size={17} />
+            DOWNLOAD JSON BACKUP
           </button>
 
           <button
+            onClick={exportCsv}
             type="button"
-            className="ygs-secondary-button"
-            onClick={downloadCSV}
+            className="g6-secondary"
           >
-            <FileSpreadsheet size={18} />
-            Export Consultations CSV
+            <FileSpreadsheet size={17} />
+            EXPORT REQUESTS CSV
           </button>
         </section>
 
-        <section className="ygs-panel ygi-data-card">
-          <span className="ygi-data-icon">
-            <Upload size={25} />
-          </span>
+        <section className="g6-panel g6-vault-card">
+          <div className="g6-vault-icon">
+            <Upload size={26} />
+          </div>
 
-          <span className="ygs-eyebrow">
-            02 / RESTORE
+          <span className="g6-kicker">
+            02 / VALIDATE & RESTORE
           </span>
 
           <h2>
-            Bring back <em>the details.</em>
+            Bring it <em>back.</em>
           </h2>
 
           <p>
-            Import a previously exported YOUR GLOW
-            JSON backup. All data is validated
-            before restoration.
+            Import a validated JSON
+            backup (up to 1 MB).
+            Records, supported keys
+            and overlapping active
+            slots are checked before
+            any replacement.
           </p>
 
-          <label className="ygi-file-field">
-            <span>SELECT JSON BACKUP</span>
+          <label className="g6-field">
+            <span>
+              CHOOSE JSON FILE
+            </span>
 
             <input
               type="file"
               accept=".json,application/json"
-              onChange={selectBackup}
+              onChange={selectFile}
             />
           </label>
 
-          {pendingBackup && (
-            <div className="ygi-restore-preview">
+          {pending && (
+            <div className="g6-restore-ready">
+              <CheckCircle2 size={19} />
+
               <strong>
-                Valid backup detected
+                VALID BACKUP
               </strong>
 
               <p>
-                {pendingBackup.bookings.length} demo
-                consultations and{" "}
+                {
+                  pending.bookings.length
+                }{" "}
+                demo requests ·{" "}
                 {
                   Object.keys(
-                    pendingBackup.serviceDrafts
+                    pending.serviceDrafts
                   ).length
                 }{" "}
-                service drafts.
+                catalog drafts
               </p>
 
-              <label className="ygi-confirm-field">
+              <label className="g6-field">
                 <span>
-                  TYPE RESTORE TO CONTINUE
+                  TYPE RESTORE
                 </span>
 
                 <input
-                  type="text"
-                  autoComplete="off"
-                  placeholder="RESTORE"
-                  value={restoreWord}
+                  value={restorePhrase}
                   onChange={(event) =>
-                    setRestoreWord(
+                    setRestorePhrase(
                       event.target.value
                     )
                   }
+                  autoComplete="off"
+                  placeholder="RESTORE"
                 />
               </label>
 
               <button
                 type="button"
-                className="ygs-primary-button"
                 disabled={
-                  restoreWord !== "RESTORE"
+                  restorePhrase !== "RESTORE"
                 }
-                onClick={restoreBackup}
+                onClick={restore}
               >
-                <RotateCcw size={18} />
-                Restore Demo Backup
+                <RotateCcw size={17} />
+                RESTORE THIS BACKUP
               </button>
             </div>
           )}
         </section>
       </div>
 
-      <section className="ygs-panel ygi-reset-section">
+      <section className="g6-panel g6-danger">
         <div>
-          <span className="ygs-eyebrow">
-            03 / CLEAN DEMO ENVIRONMENT
+          <span className="g6-kicker">
+            03 / RESET DEMO REQUESTS
           </span>
 
           <h2>
-            Begin <em>again.</em>
+            Start <em>fresh.</em>
           </h2>
 
           <p>
-            Clear all sample consultation requests
-            from this browser. This also releases
-            the occupied demo appointment slots.
-            Your studio settings and service
-            drafts will stay intact.
+            Clear only sample consultation
+            history. Studio Settings and
+            Service Catalog drafts remain
+            saved. Export a backup first
+            if you may need the records later.
           </p>
         </div>
 
-        <div className="ygi-reset-controls">
-          <label className="ygi-confirm-field">
-            <span>TYPE RESET TO CONTINUE</span>
+        <div>
+          <label className="g6-field">
+            <span>
+              TYPE RESET TO CONFIRM
+            </span>
 
             <input
-              type="text"
-              autoComplete="off"
-              value={resetWord}
-              placeholder="RESET"
+              value={resetPhrase}
               onChange={(event) =>
-                setResetWord(event.target.value)
+                setResetPhrase(
+                  event.target.value
+                )
               }
+              placeholder="RESET"
+              autoComplete="off"
             />
           </label>
 
           <button
             type="button"
-            className="ygi-danger-button"
             disabled={
-              resetWord !== "RESET" ||
-              bookings.length === 0
+              resetPhrase !== "RESET"
             }
-            onClick={resetRequests}
+            onClick={clearRequests}
           >
-            <XCircle size={18} />
-            Clear All Demo Requests
+            <XCircle size={17} />
+            CLEAR REQUEST HISTORY
           </button>
         </div>
       </section>
 
       {notice && (
-        <div
-          className="ygi-feedback"
+        <p
+          className="g6-success"
           role="status"
         >
-          <CheckCircle2 size={21} />
+          <CheckCircle2 size={17} />
           {notice}
-        </div>
+        </p>
       )}
 
       {error && (
-        <div
-          className="ygi-feedback is-error"
+        <p
+          className="g6-error"
           role="alert"
         >
-          <XCircle size={21} />
           {error}
-        </div>
+        </p>
       )}
 
-      <div className="ygs-information">
-        <ShieldCheck size={23} />
+      <div className="g6-bottom-navigation">
+        <Link to="/staff/settings">
+          STUDIO SETTINGS
+          <ArrowRight size={17} />
+        </Link>
 
-        <div>
-          <strong>
-            This is a local data tool, not a
-            medical records system.
-          </strong>
-
-          <p>
-            Backups are not encrypted. They are
-            downloaded manually and should contain
-            fictional information only. Do not use
-            this prototype for real client records,
-            skin photographs or health details.
-          </p>
-        </div>
+        <Link to="/staff/reports">
+          VIEW REPORTS
+          <ArrowRight size={17} />
+        </Link>
       </div>
 
-      <Link
-        className="ygs-panel-link ygi-return-link"
-        to="/staff"
-      >
-        Return to Studio Overview
-        <ArrowRight size={18} />
-      </Link>
-    </div>
+      <p className="g6-notice">
+        <ShieldCheck size={18} />
+        The vault is not encrypted or
+        private patient storage.
+        Use fictional data only.
+        Restoring a backup replaces
+        current browser-local demo records.
+      </p>
+    </main>
   );
 }

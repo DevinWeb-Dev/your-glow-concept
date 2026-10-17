@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import {
-  ArrowRight,
+  ArrowUpRight,
   CheckCircle2,
   Clock3,
-  MapPin,
   RotateCcw,
   Save,
   Settings2,
@@ -22,6 +22,8 @@ import {
   readLocalObject,
 } from "../../utils/studioInsights.js";
 
+import "../../styles/glow-batch6-final.css";
+
 export const DEFAULT_SETTINGS = {
   studioName: "YOUR GLOW.",
 
@@ -29,9 +31,7 @@ export const DEFAULT_SETTINGS = {
     "Care for your skin. Confidence in your own way.",
 
   locationLabel: "",
-
   sampleEmail: "",
-
   samplePhone: "",
 
   description:
@@ -40,60 +40,98 @@ export const DEFAULT_SETTINGS = {
   conceptNotes: "",
 };
 
-function readSettings() {
-  const saved = readLocalObject(
+const LIMITS = {
+  studioName: 100,
+  tagline: 180,
+  locationLabel: 140,
+  sampleEmail: 140,
+  samplePhone: 50,
+  description: 700,
+  conceptNotes: 700,
+};
+
+function loadSettings() {
+  const raw = readLocalObject(
     STUDIO_SETTINGS_KEY
   );
 
-  const result = { ...DEFAULT_SETTINGS };
+  const data = {
+    ...DEFAULT_SETTINGS,
+  };
 
   for (
     const key of Object.keys(DEFAULT_SETTINGS)
   ) {
-    if (typeof saved[key] === "string") {
-      result[key] = saved[key];
+    if (typeof raw[key] === "string") {
+      data[key] = raw[key].slice(
+        0,
+        LIMITS[key]
+      );
     }
   }
 
-  return result;
+  return data;
 }
 
-function Field({
+function SettingField({
   label,
+  name,
   value,
   onChange,
   placeholder,
-  maxLength = 140,
-  type = "text",
+  multiline = false,
 }) {
   return (
-    <label className="ygi-field">
+    <label className="g6-field">
       <span>{label}</span>
 
-      <input
-        type={type}
-        value={value}
-        maxLength={maxLength}
-        placeholder={placeholder}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
-      />
+      {multiline ? (
+        <textarea
+          rows={4}
+          maxLength={LIMITS[name]}
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) =>
+            onChange(
+              name,
+              event.target.value
+            )
+          }
+        />
+      ) : (
+        <input
+          type="text"
+          maxLength={LIMITS[name]}
+          value={value}
+          placeholder={placeholder}
+          onChange={(event) =>
+            onChange(
+              name,
+              event.target.value
+            )
+          }
+        />
+      )}
+
+      <small>
+        {value.length} / {LIMITS[name]}
+      </small>
     </label>
   );
 }
 
 export default function StudioSettingsPage() {
-  const [saved, setSaved] = useState(
-    readSettings
-  );
+  const [saved, setSaved] =
+    useState(loadSettings);
 
-  const [draft, setDraft] = useState(
-    () => ({ ...saved })
-  );
+  const [draft, setDraft] =
+    useState(() => ({ ...saved }));
 
-  const [notice, setNotice] = useState("");
-  const [error, setError] = useState("");
+  const [notice, setNotice] =
+    useState("");
+
+  const [error, setError] =
+    useState("");
 
   const changed = useMemo(
     () =>
@@ -102,31 +140,35 @@ export default function StudioSettingsPage() {
     [saved, draft]
   );
 
-  function update(key, value) {
-    setDraft((current) => ({
-      ...current,
-      [key]: value,
+  function update(name, value) {
+    setDraft((old) => ({
+      ...old,
+      [name]: value,
     }));
 
     setNotice("");
     setError("");
   }
 
-  function handleSave(event) {
+  function save(event) {
     event.preventDefault();
 
-    if (!draft.studioName.trim()) {
+    const normalized =
+      Object.fromEntries(
+        Object.keys(DEFAULT_SETTINGS).map(
+          (key) => [
+            key,
+            draft[key].trim(),
+          ]
+        )
+      );
+
+    if (!normalized.studioName) {
       setError(
-        "Please enter a studio concept name."
+        "Enter a studio concept name before saving."
       );
       return;
     }
-
-    const normalized = Object.fromEntries(
-      Object.keys(DEFAULT_SETTINGS).map(
-        (key) => [key, draft[key].trim()]
-      )
-    );
 
     try {
       localStorage.setItem(
@@ -136,28 +178,32 @@ export default function StudioSettingsPage() {
 
       setSaved(normalized);
       setDraft(normalized);
+      setError("");
 
       setNotice(
-        "Studio profile draft saved successfully."
+        "Studio profile saved as a browser-only draft."
       );
-      setError("");
     } catch {
       setError(
-        "Unable to save the studio profile in this browser."
+        "Browser storage is unavailable. Nothing was saved."
       );
     }
   }
 
-  function discardChanges() {
+  function discard() {
     setDraft({ ...saved });
-    setNotice("Unsaved changes discarded.");
+
+    setNotice(
+      "Unsaved edits discarded."
+    );
+
     setError("");
   }
 
-  function resetSettings() {
+  function restore() {
     if (
       !window.confirm(
-        "Reset your browser-local studio settings to the original concept?"
+        "Restore YOUR GLOW studio profile defaults in this browser?"
       )
     ) {
       return;
@@ -168,215 +214,210 @@ export default function StudioSettingsPage() {
         STUDIO_SETTINGS_KEY
       );
 
-      const original = {
+      setSaved({
         ...DEFAULT_SETTINGS,
-      };
+      });
 
-      setSaved(original);
-      setDraft(original);
-      setNotice(
-        "Original studio concept settings restored."
-      );
+      setDraft({
+        ...DEFAULT_SETTINGS,
+      });
+
       setError("");
+
+      setNotice(
+        "Original studio profile draft restored."
+      );
     } catch {
       setError(
-        "Unable to reset settings in this browser."
+        "Unable to reset studio settings in this browser."
       );
     }
   }
 
   return (
-    <div className="ygs-page ygi-page">
-      <div className="ygs-page-heading">
+    <main className="g6 g6-settings">
+      <header className="g6-hero g6-hero--soft">
         <div>
-          <span className="ygs-eyebrow">
-            WORKSPACE CONFIGURATION
+          <span className="g6-kicker">
+            STUDIO CONFIGURATION / 03
           </span>
 
           <h1>
-            Make the studio
-            <br />
-            <em>your own.</em>
+            Make it <em>yours.</em>
           </h1>
 
           <p>
-            Customize a fictional business
-            profile and preview the studio's
-            editorial identity.
+            Build an internal identity draft
+            for your fictional studio.
+            Your public website and
+            consultation rules will not change.
           </p>
+
+          <div className="g6-hero-actions">
+            <Link to="/staff/data">
+              BACK UP THIS STUDIO
+              <ArrowUpRight size={17} />
+            </Link>
+          </div>
         </div>
 
-        <button
-          type="button"
-          className="ygs-secondary-button"
-          onClick={resetSettings}
+        <div
+          className="g6-hero-art"
+          aria-hidden="true"
         >
-          <RotateCcw size={17} />
-          Reset Draft Settings
-        </button>
-      </div>
+          <span>YG.</span>
+          <small>THE IDENTITY STUDY</small>
+        </div>
+      </header>
 
-      <div className="ygi-settings-layout">
+      <div className="g6-settings-grid">
         <form
-          className="ygs-panel ygi-settings-form"
-          onSubmit={handleSave}
+          className="g6-panel g6-settings-form"
+          onSubmit={save}
         >
-          <div className="ygs-panel-heading">
+          <div className="g6-panel-head">
             <div>
-              <span className="ygs-eyebrow">
-                STUDIO PROFILE
+              <span className="g6-kicker">
+                01 / PERSONALIZATION
               </span>
 
               <h2>
-                The little <em>details.</em>
+                Small <em>details.</em>
               </h2>
             </div>
 
-            <Settings2
-              size={25}
-              color="#B78B83"
-            />
+            <Settings2 size={25} />
           </div>
 
-          <div className="ygi-field-grid">
-            <Field
+          <div className="g6-form-grid">
+            <SettingField
+              name="studioName"
               label="STUDIO CONCEPT NAME"
               value={draft.studioName}
-              onChange={(value) =>
-                update("studioName", value)
-              }
+              onChange={update}
               placeholder="YOUR GLOW."
-              maxLength={100}
             />
 
-            <Field
-              label="BRAND TAGLINE"
+            <SettingField
+              name="tagline"
+              label="STUDIO TAGLINE"
               value={draft.tagline}
-              onChange={(value) =>
-                update("tagline", value)
-              }
-              maxLength={180}
+              onChange={update}
+              placeholder="Your editorial point of view"
             />
 
-            <Field
+            <SettingField
+              name="locationLabel"
               label="SAMPLE LOCATION LABEL"
               value={draft.locationLabel}
-              onChange={(value) =>
-                update("locationLabel", value)
-              }
-              placeholder="e.g. Proposed Metro Manila studio"
+              onChange={update}
+              placeholder="Fictional location only"
             />
 
-            <Field
-              label="SAMPLE CONTACT NUMBER"
-              value={draft.samplePhone}
-              onChange={(value) =>
-                update("samplePhone", value)
-              }
-              placeholder="Optional demo contact"
-              maxLength={50}
-            />
-
-            <Field
-              label="SAMPLE EMAIL ADDRESS"
-              type="email"
+            <SettingField
+              name="sampleEmail"
+              label="SAMPLE EMAIL LABEL"
               value={draft.sampleEmail}
-              onChange={(value) =>
-                update("sampleEmail", value)
-              }
-              placeholder="Optional demo email"
-              maxLength={140}
+              onChange={update}
+              placeholder="fictional@example.test"
             />
+
+            <SettingField
+              name="samplePhone"
+              label="SAMPLE PHONE LABEL"
+              value={draft.samplePhone}
+              onChange={update}
+              placeholder="Fictional contact only"
+            />
+
+            <div className="g6-field g6-field-note">
+              <span>INTERNAL ONLY</span>
+
+              <p>
+                Do not enter real client names,
+                private contact details, or
+                medical information.
+              </p>
+            </div>
           </div>
 
-          <label className="ygi-field">
-            <span>ABOUT THE STUDIO CONCEPT</span>
+          <SettingField
+            name="description"
+            label="STUDIO CONCEPT DESCRIPTION"
+            value={draft.description}
+            onChange={update}
+            multiline
+            placeholder="What is the design story?"
+          />
 
-            <textarea
-              rows={5}
-              maxLength={700}
-              value={draft.description}
-              onChange={(event) =>
-                update(
-                  "description",
-                  event.target.value
-                )
-              }
-            />
-          </label>
-
-          <label className="ygi-field">
-            <span>INTERNAL PROJECT NOTES</span>
-
-            <textarea
-              rows={4}
-              maxLength={700}
-              value={draft.conceptNotes}
-              placeholder="Ideas for the final website, design adjustments, launch notes..."
-              onChange={(event) =>
-                update(
-                  "conceptNotes",
-                  event.target.value
-                )
-              }
-            />
-          </label>
-
-          {notice && (
-            <div
-              className="ygi-feedback"
-              role="status"
-            >
-              <CheckCircle2 size={19} />
-              {notice}
-            </div>
-          )}
+          <SettingField
+            name="conceptNotes"
+            label="PRIVATE CONCEPT NOTES"
+            value={draft.conceptNotes}
+            onChange={update}
+            multiline
+            placeholder="Design direction and future revisions"
+          />
 
           {error && (
-            <div
-              className="ygi-feedback is-error"
+            <p
+              className="g6-error"
               role="alert"
             >
               {error}
-            </div>
+            </p>
           )}
 
-          <div className="ygi-form-actions">
+          {notice && (
+            <p
+              className="g6-success"
+              role="status"
+            >
+              <CheckCircle2 size={17} />
+              {notice}
+            </p>
+          )}
+
+          <div className="g6-form-actions">
             <button
               type="submit"
               disabled={!changed}
-              className="ygs-primary-button"
             >
-              <Save size={18} />
-              Save Studio Draft
+              <Save size={17} />
+              SAVE LOCAL DRAFT
             </button>
 
             <button
               type="button"
               disabled={!changed}
-              className="ygs-secondary-button"
-              onClick={discardChanges}
+              onClick={discard}
             >
-              Discard Changes
+              DISCARD CHANGES
+            </button>
+
+            <button
+              type="button"
+              onClick={restore}
+            >
+              <RotateCcw size={16} />
+              RESTORE DEFAULTS
             </button>
           </div>
         </form>
 
-        <aside className="ygi-settings-aside">
-          <div className="ygi-brand-preview">
-            <span className="ygs-eyebrow">
-              LIVE CONCEPT PREVIEW
+        <aside className="g6-settings-aside">
+          <div className="g6-brand-preview">
+            <span className="g6-kicker">
+              02 / LIVE DRAFT PREVIEW
             </span>
 
-            <span className="ygi-brand-symbol">
-              <Sparkles
-                size={31}
-                strokeWidth={1.3}
-              />
+            <span className="g6-brand-spark">
+              <Sparkles size={36} />
             </span>
 
             <h2>
-              {draft.studioName || "YOUR GLOW."}
+              {draft.studioName ||
+                "YOUR GLOW."}
             </h2>
 
             <p>
@@ -384,80 +425,85 @@ export default function StudioSettingsPage() {
                 DEFAULT_SETTINGS.tagline}
             </p>
 
-            <div className="ygi-brand-location">
-              <MapPin size={18} />
+            <div>
+              <span>STUDIO LOCATION</span>
 
-              {draft.locationLabel ||
-                "Location not specified"}
+              <strong>
+                {draft.locationLabel ||
+                  "Not specified"}
+              </strong>
             </div>
 
             <small>
-              INTERNAL DRAFT ONLY · NOT PUBLISHED
+              INTERNAL PREVIEW · NEVER
+              AUTO-PUBLISHED
             </small>
           </div>
 
-          <div className="ygs-panel ygi-policy-panel">
-            <span className="ygs-eyebrow">
-              CONSULTATION POLICY PREVIEW
+          <div className="g6-panel g6-rules">
+            <span className="g6-kicker">
+              03 / FIXED DEMO POLICY
             </span>
 
-            <h3>
-              A little <em>structure.</em>
-            </h3>
+            <h2>
+              Time has <em>boundaries.</em>
+            </h2>
 
             <div>
-              <span>Sample operating days</span>
-              <strong>Monday–Saturday</strong>
+              <span>
+                Operating sample days
+              </span>
+              <strong>
+                Monday–Saturday
+              </strong>
             </div>
 
             <div>
-              <span>Sample closed day</span>
+              <span>
+                Closed sample day
+              </span>
               <strong>Sunday</strong>
             </div>
 
             <div>
-              <span>Request window</span>
-              <strong>1–90 days ahead</strong>
+              <span>
+                Booking window
+              </span>
+              <strong>
+                Next 90 days
+              </strong>
             </div>
 
             <div>
-              <span>Daily demo times</span>
-              <strong>{TIME_SLOTS.length}</strong>
+              <span>Daily slots</span>
+              <strong>
+                {TIME_SLOTS.length}
+              </strong>
             </div>
 
             <p>
-              {TIME_SLOTS.map(formatTime).join(", ")}
+              <Clock3 size={16} />
+              {TIME_SLOTS.map(
+                formatTime
+              ).join(" · ")}
             </p>
 
-            <div className="ygi-policy-note">
-              <Clock3 size={19} />
-
-              <span>
-                These rules come from the public
-                consultation scheduler and are
-                read-only in this batch.
-              </span>
-            </div>
+            <small>
+              Read-only rules controlled
+              by the shared appointment
+              engine.
+            </small>
           </div>
         </aside>
       </div>
 
-      <div className="ygs-information">
-        <ShieldCheck size={23} />
-
-        <div>
-          <strong>
-            Profile settings are local drafts.
-          </strong>
-
-          <p>
-            Editing the studio identity here
-            does not modify the public website,
-            appointment rules, or any real
-            clinic contact information.
-          </p>
-        </div>
-      </div>
-    </div>
+      <p className="g6-notice">
+        <ShieldCheck size={18} />
+        Saved to {STUDIO_SETTINGS_KEY}.
+        Changes do not modify public
+        pages, medical guidance or any
+        live clinic profile.
+      </p>
+    </main>
   );
 }

@@ -1,0 +1,674 @@
+/* ======================================================
+   YOUR GLOW — ORIGINAL ROSE / PLUM STAFF THEME
+   FINAL COLOR RESTORATION
+
+   Applies ONLY inside .ygs-app.
+   Keeps staff layouts and booking functionality intact.
+====================================================== */
+
+.ygs-app {
+  --sg-ink: #382f35 !important;
+  --sg-dark: #493b42 !important;
+  --sg-rose: #c4948d !important;
+  --sg-rose-light: #f1ded7 !important;
+  --sg-cream: #faf6ef !important;
+  --sg-paper: #fffdfa !important;
+  --sg-muted: #8e7d7a !important;
+  --sg-line: #e9ded7 !important;
+  --sg-olive: #929381 !important;
+  --sg-serif: "DM Serif Display", Georgia, serif;
+
+  background: #f7f3ee !important;
+  color: #382f35 !important;
+  font-family: "DM Sans", sans-serif !important;
+}
+
+/* ======================================
+   01 / STAFF SIDEBAR
+====================================== */
+
+.ygs-app .ygs-sidebar {
+  background:
+    radial-gradient(
+      ellipse at 0% 100%,
+      #71545e 0%,
+      transparent 65%
+    ),
+    #382f35 !important;
+
+  color: #faf6ef !important;
+}
+
+.ygs-app .ygs-sidebar-brand,
+.ygs-app .ygs-sidebar-brand strong {
+  color: #faf6ef !important;
+}
+
+.ygs-app .ygs-brand-mark {
+  background: #e6c3b91c !important;
+  color: #e6c3b9 !important;
+  border-color: #e6c3b978 !important;
+}
+
+.ygs-app .ygs-sidebar-brand small,
+.ygs-app .ygs-sidebar-caption {
+  color: #e2bdb5 !important;
+}
+
+.ygs-app .ygs-sidebar-link {
+  color: #eadbd9 !important;
+  border-color: transparent !important;
+}
+
+.ygs-app .ygs-sidebar-link:hover,
+.ygs-app .ygs-sidebar-link.is-active {
+  background: #e6c3b926 !important;
+  color: #ffffff !important;
+  border-color: #e6c3b94d !important;
+}
+
+.ygs-app .ygs-sidebar-link.is-active svg {
+  color: #f3cfc4 !important;
+}
+
+.ygs-app .ygs-sidebar-note {
+  background: #ffffff0d !important;
+  color: #fff8f4 !important;
+  border-color: #e6c3b94d !important;
+}
+
+.ygs-app .ygs-sidebar-note svg,
+.ygs-app .ygs-sidebar-note small {
+  color: #e6c3b9 !important;
+}
+
+.ygs-app .ygs-sidebar-note p {
+  color: #e3cac6 !important;
+}
+
+.ygs-app .ygs-return-link {
+  color: #fff8f4 !important;
+}
+
+/* ======================================
+   02 / TOPBAR AND MAIN WORKSPACE
+====================================== */
+
+.ygs-app .ygs-workspace,
+.ygs-app .ygs-main {
+  background: #f7f3ee !important;
+}
+
+.ygs-app .ygs-topbar {
+  background: #fffdfa !important;
+  border-bottom-color: #e9ded7 !important;
+}
+
+.ygs-app .ygs-topbar-symbol {
+  background: #f2ded8 !important;
+  color: #8c646b !important;
+}
+
+.ygs-app .ygs-topbar-left h2 {
+  color: #382f35 !important;
+}
+
+.ygs-app .ygs-topbar-left small,
+.ygs-app .ygs-context {
+  color: #937e7d !important;
+}
+
+.ygs-app .ygs-demo-indicator {
+  background: #f2ded8 !important;
+  color: #684d57 !important;
+  border-color: #e6c3b9 !important;
+}
+
+.ygs-app .ygs-demo-indicator i {
+  background: #b88480 !important;
+}
+
+.ygs-app .ygs-topbar-link {
+  background: #fffdfa !important;
+  border-color: #e6d6d0 !important;
+  color: #55444b !important;
+}
+
+.ygs-app .ygs-topbar-link:hover {
+  background: #f2ded8 !important;
+}
+
+.ygs-app .ygs-footer {
+  background: #f7f3ee !important;
+  color: #998481 !important;
+  border-color: #e9ded7 !important;
+}
+
+/* ======================================
+   03 / COMMON STAFF CARDS
+====================================== */
+
+.ygs-app .ygs-panel {
+  background: #fffdfa !important;
+  border-color: #e9ded7 !important;
+}
+
+.ygs-app .ygs-primary-button {
+  background: #382f35 !important;
+  border-color: #382f35 !important;
+  color: #ffffff !important;
+}
+
+.ygs-app .ygs-primary-button:hover {
+  background: #66515b !important;
+}
+
+.ygs-app .ygs-secondary-button {
+  background: #fffdfa !important;
+  border-color: #dfc8c0 !important;
+  color: #55444b !important;
+}
+
+.ygs-app .ygs-secondary-button:hover {
+  background: #f2ded8 !important;
+}
+
+.ygs-app .ygs-page-heading h1 em,
+.ygs-app .ygs-panel-heading h2 em {
+  color: #b58985 !important;
+}
+
+.ygs-app .ygs-summary-grid > article {
+  background: #fffdfa !important;
+  border-color: #e9ded7 !important;
+}
+
+.ygs-app .ygs-summary-grid > article:nth-child(2) {
+  background: #f2ded8 !important;
+}
+
+/* ======================================
+   04 / BATCH 4 DASHBOARD VARIABLES
+====================================== */
+
+.ygs-app .g4-staff {
+  --g4-deep: #382f35 !important;
+  --g4-green: #382f35 !important;
+  --g4-lime: #e6c3b9 !important;
+  --g4-cream: #faf6ef !important;
+  --g4-mint: #f2ded8 !important;
+  --g4-lilac: #e9d8de !important;
+  --g4-line: #e6d8d1 !important;
+  --g4-muted: #8e7d7a !important;
+
+  background: transparent !important;
+  color: #382f35 !important;
+  font-family: "DM Sans", sans-serif !important;
+}
+
+/* Dashboard hero */
+
+.ygs-app .g4-staff-hero {
+  background: #382f35 !important;
+  color: #fffaf5 !important;
+}
+
+.ygs-app .g4-staff-hero h1 em {
+  color: #e6c3b9 !important;
+}
+
+.ygs-app .g4-staff-hero p {
+  color: #dfcbc8 !important;
+}
+
+.ygs-app .g4-staff-hero-art {
+  background:
+    radial-gradient(
+      circle at center,
+      #906a77,
+      #55444b
+    ) !important;
+}
+
+.ygs-app .g4-staff-hero-art > span {
+  color: #e6c3b9 !important;
+}
+
+.ygs-app .g4-staff-hero-art > i {
+  color: #f1d9d4 !important;
+}
+
+.ygs-app .g4-staff-hero-art::before {
+  border-color: #e6c3b9 !important;
+  box-shadow:
+    0 0 0 43px #e6c3b91a,
+    0 0 0 91px #e6c3b90d !important;
+}
+
+/* Dashboard quick actions */
+
+.ygs-app .g4-staff-actions a:first-child {
+  background: #e6c3b9 !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g4-staff-actions a:nth-child(2) {
+  background: transparent !important;
+  color: #fffaf5 !important;
+  border-color: #dec3bc !important;
+}
+
+/* Four dashboard metric cards */
+
+.ygs-app .g4-staff-metrics article {
+  background: #fffdfa !important;
+  color: #382f35 !important;
+  border-color: #e9ded7 !important;
+}
+
+.ygs-app .g4-staff-metrics article:nth-child(2) {
+  background: #f2ded8 !important;
+  border-color: #e6c3b9 !important;
+}
+
+.ygs-app .g4-staff-metrics article strong {
+  color: #382f35 !important;
+}
+
+.ygs-app .g4-staff-metrics article p {
+  color: #8e7d7a !important;
+}
+
+/* Dashboard report panels */
+
+.ygs-app .g4-staff-panel {
+  background: #fffdfa !important;
+  color: #382f35 !important;
+  border-color: #e9ded7 !important;
+}
+
+.ygs-app .g4-staff-panel h2 em {
+  color: #bc8d86 !important;
+}
+
+/* Seven-day activity bars */
+
+.ygs-app .g4-staff-chart > div > span {
+  background: #f1e5df !important;
+}
+
+.ygs-app .g4-staff-chart i {
+  background: linear-gradient(
+    180deg,
+    #e6c3b9,
+    #9a6a75
+  ) !important;
+}
+
+/* Service interest bars */
+
+.ygs-app .g4-staff-demand > div {
+  border-bottom-color: #e9ded7 !important;
+}
+
+.ygs-app .g4-staff-demand > div > span {
+  color: #ba918a !important;
+}
+
+.ygs-app .g4-staff-demand > div > div > span {
+  background: #f0e1db !important;
+}
+
+.ygs-app .g4-staff-demand i {
+  background: #c4948d !important;
+}
+
+/* Upcoming consultation list */
+
+.ygs-app .g4-staff-upcoming article {
+  border-bottom-color: #e9ded7 !important;
+}
+
+.ygs-app .g4-staff-upcoming article > span {
+  color: #a47679 !important;
+}
+
+/* Dashboard notes and labels */
+
+.ygs-app .g4-staff-notes > div {
+  border-top-color: #e9ded7 !important;
+}
+
+.ygs-app .g4-staff-notes > div p,
+.ygs-app .g4-staff-footnote,
+.ygs-app .g4-panel-foot {
+  color: #927d79 !important;
+}
+
+/* ======================================
+   05 / BATCH 5 OPERATIONS VARIABLES
+====================================== */
+
+.ygs-app .g5-ops {
+  --g5-deep: #382f35 !important;
+  --g5-ink: #382f35 !important;
+  --g5-mint: #f2ded8 !important;
+  --g5-lime: #e6c3b9 !important;
+  --g5-paper: #fffdfa !important;
+  --g5-line: #e9ded7 !important;
+  --g5-muted: #8e7d7a !important;
+  --g5-lilac: #eadce5 !important;
+
+  color: #382f35 !important;
+  font-family: "DM Sans", sans-serif !important;
+}
+
+/* All staff operations heroes */
+
+.ygs-app .g5-ops-hero {
+  background: #382f35 !important;
+  color: #fffaf5 !important;
+}
+
+.ygs-app .g5-ops-hero h1 em {
+  color: #e6c3b9 !important;
+}
+
+.ygs-app .g5-ops-hero p {
+  color: #dfcbc8 !important;
+}
+
+.ygs-app .g5-kicker::before {
+  color: #c4948d !important;
+}
+
+/* Three different hero artworks */
+
+.ygs-app .g5-desk-hero-art {
+  background: #785d68 !important;
+}
+
+.ygs-app .g5-desk-hero-art strong {
+  color: #f2ded8 !important;
+}
+
+.ygs-app .g5-schedule-hero-art {
+  background: #e9d8de !important;
+  color: #55444b !important;
+}
+
+.ygs-app .g5-catalog-hero-art {
+  background: #f2ded8 !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-catalog-sphere {
+  background: #d5a9a3 !important;
+  box-shadow: 24px 25px 0 #55444b20 !important;
+}
+
+/* Staff metrics */
+
+.ygs-app .g5-metrics article {
+  background: #fffdfa !important;
+  border-color: #e9ded7 !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-metrics article.is-lime {
+  background: #f2ded8 !important;
+  border-color: #e6c3b9 !important;
+}
+
+.ygs-app .g5-metrics small {
+  color: #8e7d7a !important;
+}
+
+/* Shared operations panels */
+
+.ygs-app .g5-panel {
+  background: #fffdfa !important;
+  border-color: #e9ded7 !important;
+}
+
+.ygs-app .g5-panel-heading h2 em,
+.ygs-app .g5-section-title em {
+  color: #b58985 !important;
+}
+
+/* Buttons */
+
+.ygs-app .g5-button--dark,
+.ygs-app .g5-folio-actions button:first-child {
+  background: #382f35 !important;
+  border-color: #382f35 !important;
+  color: #fffdfa !important;
+}
+
+.ygs-app .g5-button--dark:hover {
+  background: #66515b !important;
+}
+
+.ygs-app .g5-button--outline {
+  background: #fffdfa !important;
+  border-color: #d9beb6 !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-button--outline:hover {
+  background: #f2ded8 !important;
+}
+
+/* ======================================
+   06 / CONSULTATION DESK
+====================================== */
+
+.ygs-app .g5-filters {
+  background: #f5ebe5 !important;
+  border-color: #e9ded7 !important;
+}
+
+.ygs-app .g5-filter :is(input, select),
+.ygs-app .g5-filter--search > div {
+  background: #fffdfa !important;
+  border-color: #e5d5ce !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-ledger-meta,
+.ygs-app .g5-ledger-entry {
+  border-color: #e9ded7 !important;
+}
+
+.ygs-app .g5-ledger-entry.is-open {
+  background: #faf3ee !important;
+}
+
+.ygs-app .g5-ledger-summary {
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-ledger-summary:hover {
+  background: #f2ded870 !important;
+}
+
+.ygs-app .g5-ledger-index,
+.ygs-app .g5-ledger-identity > small {
+  color: #b58985 !important;
+}
+
+.ygs-app .g5-state {
+  background: #eee5e0 !important;
+  color: #8e7d7a !important;
+}
+
+.ygs-app .g5-state.is-active {
+  background: #f2ded8 !important;
+  color: #7b515a !important;
+}
+
+.ygs-app .g5-ledger-expanded {
+  background: #faf4ef !important;
+}
+
+/* ======================================
+   07 / WEEKLY SCHEDULE
+====================================== */
+
+.ygs-app .g5-week-nav button {
+  background: #fffdfa !important;
+  border-color: #e1cdc6 !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-week-nav button:hover {
+  background: #f2ded8 !important;
+}
+
+.ygs-app .g5-timetable-corner {
+  background: #382f35 !important;
+  color: #fffdfa !important;
+}
+
+.ygs-app .g5-timetable-day {
+  background: #f1e7e1 !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-timetable-day.is-current {
+  background: #e6c3b9 !important;
+}
+
+.ygs-app .g5-timetable-time {
+  background: #f7efea !important;
+}
+
+.ygs-app .g5-timetable-cell.is-empty {
+  background: #fffdfa !important;
+  color: #aa9690 !important;
+}
+
+.ygs-app .g5-timetable-cell.is-booked {
+  background: #f2ded8 !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-timetable-cell.g5-tone-lilac,
+.ygs-app .g5-timetable-cell.g5-tone-violet {
+  background: #e7d8e5 !important;
+}
+
+.ygs-app .g5-timetable-cell.g5-tone-citron {
+  background: #ead5c5 !important;
+}
+
+.ygs-app .g5-timetable-cell.g5-tone-coral {
+  background: #eecac4 !important;
+}
+
+.ygs-app .g5-day-list button:hover,
+.ygs-app .g5-day-list button.is-current {
+  background: #f2ded8 !important;
+}
+
+.ygs-app .g5-inspector-illustration {
+  background: #e6c3b9 !important;
+  border-color: #c4948d !important;
+}
+
+/* ======================================
+   08 / SERVICE CATALOG
+====================================== */
+
+.ygs-app .g5-folio-image {
+  background: #f2ded8 !important;
+}
+
+.ygs-app .g5-folio-image > span {
+  background: #e6c3b9 !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-folio-content > p {
+  color: #8e7d7a !important;
+}
+
+.ygs-app .g5-folio-tags span {
+  background: #f1e7e1 !important;
+  color: #55444b !important;
+}
+
+.ygs-app .g5-folio-tags span.is-visible {
+  background: #f2ded8 !important;
+}
+
+.ygs-app .g5-folio-tags span.is-hidden {
+  background: #ead7d6 !important;
+}
+
+.ygs-app .g5-folio-tags span.is-draft {
+  background: #e7d8e5 !important;
+}
+
+.ygs-app .g5-folio-editor {
+  background: #f5ebe6 !important;
+  border-color: #e1cdc6 !important;
+}
+
+.ygs-app .g5-folio-editor :is(input, textarea) {
+  background: #fffdfa !important;
+  border-color: #e5d5ce !important;
+  color: #382f35 !important;
+}
+
+.ygs-app .g5-visibility-check input {
+  accent-color: #9e6c77 !important;
+}
+
+.ygs-app .g5-notice {
+  background: #f2ded8 !important;
+  color: #654b55 !important;
+}
+
+/* ======================================
+   09 / STUDIO TYPOGRAPHY
+====================================== */
+
+.ygs-app .g4-staff :is(h1, h2),
+.ygs-app .g5-ops :is(h1, h2) {
+  font-family:
+    "DM Serif Display",
+    Georgia,
+    serif !important;
+
+  font-weight: 400 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.ygs-app .g4-staff :is(h1, h2) em,
+.ygs-app .g5-ops :is(h1, h2) em {
+  font-family:
+    "DM Serif Display",
+    Georgia,
+    serif !important;
+}
+
+/* ======================================
+   10 / SMALL-SCREEN CONSISTENCY
+====================================== */
+
+@media (max-width: 700px) {
+  .ygs-app .g4-staff-hero h1,
+  .ygs-app .g5-ops-hero h1 {
+    font-size: clamp(
+      2.9rem,
+      9vw,
+      5rem
+    ) !important;
+  }
+
+  .ygs-app .g4-staff-panel,
+  .ygs-app .g5-panel {
+    border-radius: 12px;
+  }
+}

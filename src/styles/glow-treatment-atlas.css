@@ -1,0 +1,2215 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Gloock&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+/*
+  YOUR GLOW / 02 — LIVING TREATMENT ATLAS
+
+  Botanical sculptural treatment design system.
+  Built to extend the Batch 1 Living Skin identity.
+*/
+
+.gl7 {
+  --g-ink: #123d36;
+  --g-deep: #092a26;
+  --g-lime: #dcf57a;
+  --g-paper: #eff8f1;
+  --g-mint: #d3eee1;
+  --g-lilac: #c5b8f1;
+  --g-muted: #57766b;
+  --g-line: #bbd6c7;
+
+  --g-ease: cubic-bezier(.19, .89, .28, 1);
+  --g-font: 'Manrope', sans-serif;
+  --g-display: 'Outfit', sans-serif;
+  --g-serif: 'Gloock', Georgia, serif;
+
+  color: var(--g-ink);
+  background: var(--g-paper);
+  font-family: var(--g-font);
+  overflow: clip;
+  min-width: 0;
+}
+
+.gl7 *,
+.gl7 *::before,
+.gl7 *::after {
+  box-sizing: border-box;
+}
+
+.gl7 :is(h1, h2, h3, p) {
+  margin: 0;
+}
+
+.gl7 :is(h1, h2, h3) {
+  font-family: var(--g-display);
+  letter-spacing: -.065em;
+  line-height: 1.04;
+}
+
+.gl7 :is(h1, h2, h3) em {
+  font-family: var(--g-serif);
+  font-weight: 400;
+  letter-spacing: -.055em;
+}
+
+.gl7 img {
+  display: block;
+  max-width: 100%;
+}
+
+.gl7 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.gl7 button,
+.gl7 select,
+.gl7 input {
+  font-family: var(--g-font);
+}
+
+.gl7 button {
+  cursor: pointer;
+}
+
+.gl7 button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.gl7 :is(
+  a,
+  button,
+  input,
+  select,
+  summary
+):focus-visible {
+  outline: 3px solid #9275cb;
+  outline-offset: 3px;
+}
+
+.gl7-wrap {
+  width: min(1400px, calc(100% - 8vw));
+  margin-inline: auto;
+}
+
+.gl7-eyebrow {
+  font: 800 10px/1.65 var(--g-font);
+  letter-spacing: .13em;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gl7-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid currentColor;
+  padding: 12px 0;
+  font: 800 10px/1.3 var(--g-font);
+  letter-spacing: .05em;
+  width: max-content;
+  max-width: 100%;
+  transition: gap .3s;
+}
+
+.gl7-text-link:hover {
+  gap: 20px;
+}
+
+.gl7-glyph {
+  width: 100%;
+  color: inherit;
+  animation: gl7-spin 48s linear infinite;
+}
+
+.gl7-glyph--small {
+  width: 90px;
+}
+
+@keyframes gl7-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gl7-rise {
+  from {
+    opacity: 0;
+    transform: translateY(21px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ===========================================
+   01 / TREATMENT ATLAS HERO
+=========================================== */
+
+.gl7-atlas-hero {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.05fr)
+    minmax(0, .95fr);
+
+  background: #cde6d5;
+  min-height: 650px;
+  isolation: isolate;
+}
+
+.gl7-atlas-hero-copy {
+  padding: 37px 5vw 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 25px;
+  min-width: 0;
+}
+
+.gl7-atlas-meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font: 800 9px var(--g-font);
+  letter-spacing: .06em;
+}
+
+.gl7-atlas-hero h1 {
+  font-size: clamp(86px, 10.5vw, 170px);
+  font-weight: 900;
+  line-height: .82;
+  letter-spacing: -.1em;
+  position: relative;
+  z-index: 2;
+  margin-right: -14vw;
+}
+
+.gl7-atlas-hero h1 em {
+  display: block;
+  font-size: .95em;
+  color: #548b73;
+  white-space: nowrap;
+}
+
+.gl7-atlas-hero-copy > p {
+  font: 500 14px/1.9 var(--g-font);
+  max-width: 470px;
+  color: #416658;
+}
+
+.gl7-atlas-hero-copy > small {
+  margin-top: auto;
+  font: 700 9px/1.8 var(--g-font);
+  color: #3c6958;
+}
+
+.gl7-atlas-hero-media {
+  position: relative;
+  overflow: hidden;
+  background: #9ed3b2;
+  min-height: 560px;
+  display: grid;
+  place-items: center;
+}
+
+.gl7-atlas-hero-mask {
+  position: absolute;
+  inset: 10% 6% 10% 3%;
+  overflow: hidden;
+  border-radius:
+    47% 53% 37% 63% /
+    41% 33% 67% 59%;
+
+  transform: rotate(-7deg);
+  box-shadow: 29px 19px 0 #deecb3;
+}
+
+.gl7-atlas-hero-mask img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: rotate(7deg) scale(1.15);
+  transition: transform 1.3s var(--g-ease);
+}
+
+.gl7-atlas-hero-media:hover img {
+  transform: rotate(7deg) scale(1.24);
+}
+
+.gl7-atlas-orb {
+  position: absolute;
+  width: 40%;
+  max-width: 275px;
+  bottom: 2%;
+  right: -3%;
+  padding: 15px;
+  border-radius: 50%;
+  background: var(--g-lime);
+}
+
+.gl7-atlas-media-caption {
+  position: absolute;
+  left: 22px;
+  bottom: 22px;
+  background: var(--g-paper);
+  padding: 10px 13px;
+  border-radius: 25px;
+  font: 800 9px var(--g-font);
+}
+
+/* ===========================================
+   02 / ADVANCED TREATMENT EXPLORER
+=========================================== */
+
+.gl7-explorer {
+  padding-block: 115px 120px;
+  scroll-margin-top: 110px;
+}
+
+.gl7-explorer-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 40px;
+  margin-bottom: 35px;
+}
+
+.gl7-explorer-heading h2 {
+  font-size: clamp(62px, 6.7vw, 115px);
+  margin-top: 17px;
+  font-weight: 800;
+}
+
+.gl7-explorer-heading h2 em {
+  color: #6b987c;
+}
+
+.gl7-explorer-heading > p {
+  max-width: 365px;
+  font: 500 12px/1.9 var(--g-font);
+  color: var(--g-muted);
+}
+
+/* THE FILTER CONTROL SURFACE */
+
+.gl7-filter-shell {
+  border: 1px solid var(--g-line);
+  padding: 20px;
+  background: #e3f1e5;
+  border-radius: 28px;
+}
+
+.gl7-filter-top {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gl7-search {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 17px;
+  border: 1px solid var(--g-line);
+  border-radius: 100px;
+  background: #fff;
+}
+
+.gl7-search input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.gl7-sort {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 15px;
+  border: 1px solid var(--g-line);
+  background: #fff;
+  border-radius: 30px;
+  font: 700 9px var(--g-font);
+}
+
+.gl7-sort select {
+  border: 0;
+  max-width: 180px;
+  background: transparent;
+  font: 700 11px var(--g-font);
+}
+
+/* CATEGORY PILLS */
+
+.gl7-filter-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 19px 0;
+}
+
+.gl7-filter-cats button {
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 42px;
+  padding: 10px 15px;
+  border: 1px solid #b4d2c1;
+  border-radius: 100px;
+  background: transparent;
+  color: var(--g-ink);
+  font: 800 11px var(--g-font);
+  transition:
+    background .25s,
+    color .25s;
+}
+
+.gl7-filter-cats button span {
+  font-size: 9px;
+  opacity: .7;
+}
+
+.gl7-filter-cats button.is-active,
+.gl7-filter-cats button:hover {
+  background: var(--g-ink);
+  color: white;
+}
+
+/* SECONDARY FILTER CONTROLS */
+
+.gl7-filter-bottom {
+  display: grid;
+  grid-template-columns:
+    1.3fr 1fr .8fr auto;
+  gap: 12px;
+  align-items: end;
+  border-top: 1px solid #b4d2c1;
+  padding-top: 20px;
+}
+
+.gl7-filter-bottom label {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.gl7-filter-bottom label > span {
+  font: 800 9px var(--g-font);
+  letter-spacing: .06em;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.gl7-filter-bottom select {
+  width: 100%;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid var(--g-line);
+  padding: 13px;
+  border-radius: 12px;
+  font: 700 11px var(--g-font);
+}
+
+.gl7-price input {
+  width: 100%;
+  accent-color: var(--g-ink);
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.gl7-reset {
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid var(--g-ink);
+  color: var(--g-ink);
+  background: transparent;
+  border-radius: 100px;
+  font: 800 10px var(--g-font);
+}
+
+.gl7-results-line {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 23px 0;
+  font: 800 10px var(--g-font);
+  color: var(--g-muted);
+  letter-spacing: .08em;
+}
+
+/* ===========================================
+   03 / BIOMORPHIC TREATMENT CARD FAMILY
+=========================================== */
+
+.gl7-service-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.gl7-service-card {
+  --gl7-tint: #cce6d7;
+  --gl7-accent: #477764;
+
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* SIX TREATMENT VISUAL MOODS */
+
+.gl7-mood-sage {
+  --gl7-tint: #d6ead8;
+  --gl7-accent: #4a7962;
+}
+
+.gl7-mood-mint {
+  --gl7-tint: #b6e4d6;
+  --gl7-accent: #247865;
+}
+
+.gl7-mood-citron {
+  --gl7-tint: #e3efa8;
+  --gl7-accent: #6e8c31;
+}
+
+.gl7-mood-lilac {
+  --gl7-tint: #d6caee;
+  --gl7-accent: #7460a2;
+}
+
+.gl7-mood-violet {
+  --gl7-tint: #c0b4e9;
+  --gl7-accent: #6652a0;
+}
+
+.gl7-mood-coral {
+  --gl7-tint: #f1cfc1;
+  --gl7-accent: #b26c5c;
+}
+
+/* TREATMENT PHOTOGRAPHY */
+
+.gl7-card-media {
+  position: relative;
+  aspect-ratio: .88;
+
+  border-radius:
+    52% 48% 22px 22px /
+    21% 20% 22px 22px;
+
+  background: var(--gl7-tint);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.gl7-service-card:nth-child(3n+2)
+.gl7-card-media {
+  border-radius:
+    25px 44% 25px 35% /
+    25px 30% 25px 32%;
+}
+
+.gl7-service-card:nth-child(3n+3)
+.gl7-card-media {
+  border-radius:
+    44% 26px 44% 26px /
+    28% 26px 28% 26px;
+}
+
+.gl7-card-media > a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.gl7-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1.1s var(--g-ease);
+}
+
+.gl7-card-media:hover img {
+  transform: scale(1.09);
+}
+
+.gl7-card-count {
+  position: absolute;
+  left: 17px;
+  top: 18px;
+  padding: 9px 13px;
+  border-radius: 100px;
+  background: var(--g-paper);
+  font: 800 9px var(--g-font);
+}
+
+.gl7-card-geometry {
+  position: absolute;
+  right: -21px;
+  bottom: -32px;
+  padding: 8px;
+  background: var(--gl7-tint);
+  color: var(--g-ink);
+  border-radius: 50%;
+  opacity: .94;
+  pointer-events: none;
+}
+
+.gl7-card-category {
+  position: absolute;
+  left: 17px;
+  bottom: 18px;
+  border-radius: 100px;
+  padding: 9px 13px;
+  background: var(--g-lime);
+  font: 800 9px var(--g-font);
+}
+
+/* TREATMENT COPY */
+
+.gl7-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 25px 1px 6px;
+}
+
+.gl7-card-overline {
+  color: var(--gl7-accent);
+  font: 800 9px var(--g-font);
+  letter-spacing: .12em;
+}
+
+.gl7-card-body h3 {
+  font-size: clamp(29px, 3.2vw, 54px);
+  margin: 15px 0;
+  font-weight: 700;
+}
+
+.gl7-card-body h3 a:hover {
+  color: var(--gl7-accent);
+}
+
+.gl7-card-body > p {
+  color: var(--g-muted);
+  font: 500 12px/1.85 var(--g-font);
+  margin-bottom: 18px;
+}
+
+.gl7-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: auto;
+  padding-bottom: 18px;
+}
+
+.gl7-card-tags span {
+  padding: 8px 10px;
+  border-radius: 50px;
+  font: 700 9px var(--g-font);
+  background: var(--gl7-tint);
+}
+
+.gl7-card-facts {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 17px 0;
+  border-top: 1px solid var(--g-line);
+  font: 800 10px var(--g-font);
+}
+
+.gl7-card-facts span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gl7-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gl7-card-actions :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 43px;
+  border-radius: 100px;
+  padding: 9px 13px;
+  font: 800 9px var(--g-font);
+}
+
+.gl7-card-open {
+  background: var(--g-ink);
+  color: white !important;
+}
+
+.gl7-card-open:hover {
+  background: #286b56;
+}
+
+.gl7-card-actions button {
+  background: transparent;
+  border: 1px solid var(--g-ink);
+  color: var(--g-ink);
+}
+
+.gl7-card-actions button[aria-pressed=true] {
+  background: var(--g-lime);
+}
+
+.gl7-card-editorial {
+  position: absolute;
+  top: 50px;
+  right: -22px;
+  font: 800 8px var(--g-font);
+  color: white;
+  background: var(--g-ink);
+  padding: 9px;
+  transform: rotate(90deg);
+}
+
+/* EMPTY RESULTS */
+
+.gl7-empty {
+  min-height: 280px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  background: #e2f0e6;
+  border-radius: 25px;
+}
+
+.gl7-empty h3 {
+  font-size: 45px;
+}
+
+.gl7-empty p {
+  font-size: 12px;
+  color: var(--g-muted);
+}
+
+.gl7-empty button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 17px;
+  border: 0;
+  border-radius: 50px;
+  background: var(--g-ink);
+  color: white;
+  font-weight: 800;
+}
+
+.gl7-disclosure {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 40px !important;
+  font: 600 10px/1.8 var(--g-font);
+  color: var(--g-muted);
+}
+
+.gl7-disclosure svg {
+  flex-shrink: 0;
+}
+
+/* ===========================================
+   04 / TREATMENT FINDER CONNECTION
+=========================================== */
+
+.gl7-atlas-finder {
+  background: #d0c5ee;
+  overflow: hidden;
+}
+
+.gl7-atlas-finder-inner {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  align-items: center;
+  min-height: 470px;
+}
+
+.gl7-atlas-finder-inner > div:first-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 70px 5vw 70px 0;
+}
+
+.gl7-atlas-finder h2 {
+  font-size: clamp(64px, 7vw, 115px);
+  font-weight: 800;
+}
+
+.gl7-atlas-finder h2 em {
+  color: #7463a4;
+}
+
+.gl7-atlas-finder p {
+  font: 500 13px/1.8 var(--g-font);
+  max-width: 520px;
+}
+
+.gl7-atlas-finder a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 100px;
+  padding: 16px 19px;
+  background: var(--g-lime);
+  font: 800 10px var(--g-font);
+}
+
+.gl7-finder-art {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  color: #655192;
+}
+
+.gl7-finder-art .gl7-glyph {
+  width: min(75%, 360px);
+}
+
+.gl7-finder-art span {
+  position: absolute;
+  bottom: 30px;
+  right: 15px;
+  font: 800 9px var(--g-font);
+}
+
+.gl7-atlas-end {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 40px;
+  padding-block: 120px;
+}
+
+.gl7-atlas-end h2 {
+  font-size: clamp(58px, 7vw, 110px);
+  margin-top: 16px;
+}
+
+.gl7-atlas-end h2 em {
+  color: #709d81;
+}
+
+.gl7-atlas-end > div:last-child {
+  max-width: 420px;
+}
+
+.gl7-atlas-end p {
+  font: 500 13px/1.9 var(--g-font);
+  color: var(--g-muted);
+  margin-bottom: 25px;
+}
+
+.gl7-atlas-end a {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font: 800 10px var(--g-font);
+  padding-bottom: 10px;
+  border-bottom: 1px solid;
+}
+
+/* ===========================================
+   05 / FLOATING COMPARISON DOCK
+=========================================== */
+
+.gl7-compare-dock {
+  position: fixed;
+  z-index: 1300;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+
+  width: min(1030px, calc(100% - 30px));
+
+  background: var(--g-deep);
+  color: white;
+
+  border: 1px solid #709385;
+  border-radius: 24px;
+
+  box-shadow: 0 18px 50px #0a2b2880;
+
+  padding: 16px 19px;
+
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.gl7-compare-dock > div {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.gl7-compare-dock strong {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font: 800 10px var(--g-font);
+}
+
+.gl7-compare-dock span {
+  display: block;
+  min-width: 0;
+  font: 500 11px/1.5 var(--g-font);
+  color: #cde3d6;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gl7-compare-dock button {
+  border: 0;
+  border-radius: 100px;
+  white-space: nowrap;
+  padding: 13px 17px;
+  font: 800 10px var(--g-font);
+}
+
+.gl7-compare-clear {
+  color: white;
+  background: #ffffff1b;
+}
+
+.gl7-compare-open {
+  background: var(--g-lime);
+  color: var(--g-deep);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* ===========================================
+   06 / COMPARISON MODAL
+=========================================== */
+
+.gl7-compare-overlay {
+  position: fixed;
+  z-index: 2100;
+  inset: 0;
+  background: #06241fc9;
+  padding: 20px;
+
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(11px);
+}
+
+.gl7-compare-modal {
+  --g-line: #c6dcce;
+
+  max-height: min(
+    850px,
+    calc(100dvh - 36px)
+  );
+
+  overflow: auto;
+  width: min(1050px, 100%);
+  background: #f2faf2;
+  color: #123d36;
+  padding: clamp(20px, 4vw, 48px);
+  border-radius: 28px;
+  box-shadow: 0 30px 90px #031e19b0;
+}
+
+.gl7-compare-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.gl7-compare-heading h2 {
+  font: 800 clamp(45px, 5vw, 80px)/1
+    'Outfit', sans-serif;
+
+  letter-spacing: -.07em;
+  margin: 12px 0;
+}
+
+.gl7-compare-heading h2 em {
+  font-family: 'Gloock', serif;
+  font-weight: 400;
+  color: #688f70;
+}
+
+.gl7-compare-heading > button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 43px;
+  height: 43px;
+  border: 1px solid #123d36;
+  background: transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.gl7-compare-intro {
+  font: 500 12px/1.8 'Manrope', sans-serif;
+  color: #5f7768;
+  margin-bottom: 26px;
+}
+
+.gl7-compare-scroll {
+  overflow-x: auto;
+}
+
+.gl7-compare-table {
+  display: grid;
+  grid-template-columns:
+    140px
+    repeat(
+      var(--compare-count),
+      minmax(175px, 1fr)
+    );
+
+  min-width: 600px;
+  gap: 8px;
+}
+
+.gl7-compare-labels,
+.gl7-compare-column {
+  display: grid;
+  grid-template-rows:
+    90px
+    60px
+    60px
+    80px
+    minmax(115px, auto)
+    70px;
+}
+
+.gl7-compare-labels > span {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  color: #527368;
+  font: 800 9px 'Manrope', sans-serif;
+  border-bottom: 1px solid #c6dcce;
+}
+
+.gl7-compare-column {
+  background: #e1efe4;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.gl7-compare-column > :is(
+  div,
+  span,
+  p,
+  a
+) {
+  padding: 12px;
+  border-bottom: 1px solid #c6dcce;
+  display: flex;
+  align-items: center;
+  font: 700 11px/1.6 'Manrope', sans-serif;
+}
+
+.gl7-compare-column > span small {
+  margin-left: 5px;
+  font-size: 9px;
+}
+
+.gl7-compare-name {
+  justify-content: space-between;
+  gap: 7px;
+}
+
+.gl7-compare-name strong {
+  font: 700 19px/1.05 'Outfit', sans-serif;
+}
+
+.gl7-compare-name button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.gl7-compare-column > a {
+  background: #123d36;
+  color: white;
+  gap: 8px;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.gl7-compare-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  color: #5c7969;
+  font: 700 10px/1.7 'Manrope', sans-serif;
+}
+
+/* ===========================================
+   07 / INDIVIDUAL TREATMENT JOURNAL
+=========================================== */
+
+.gl7-journal-breadcrumb {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-block: 23px;
+  font: 800 9px var(--g-font);
+  border-bottom: 1px solid var(--g-line);
+}
+
+.gl7-journal-breadcrumb a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.gl7-journal-hero {
+  display: grid;
+  grid-template-columns: 52% 48%;
+  min-height: 670px;
+  background: var(--gl7-tint);
+}
+
+.gl7-journal-hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 25px;
+  padding: 65px 5vw;
+  min-width: 0;
+}
+
+.gl7-journal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  font: 800 9px var(--g-font);
+}
+
+.gl7-journal-hero h1 {
+  font-size: clamp(64px, 8.2vw, 128px);
+  font-weight: 900;
+  line-height: .9;
+  max-width: 900px;
+  position: relative;
+  z-index: 3;
+}
+
+.gl7-journal-hero h1 em {
+  display: block;
+  color: var(--gl7-accent);
+}
+
+.gl7-journal-opening {
+  font: 500 clamp(15px, 1.5vw, 21px)/1.7
+    var(--g-font);
+
+  max-width: 510px;
+}
+
+.gl7-journal-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+
+.gl7-primary-pill {
+  min-height: 55px;
+  padding: 5px 5px 5px 19px;
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+
+  background: var(--g-deep);
+  color: white !important;
+  border-radius: 100px;
+
+  font: 800 10px var(--g-font);
+  transition: transform .35s;
+}
+
+.gl7-primary-pill:hover {
+  transform: translateY(-3px);
+}
+
+.gl7-primary-pill > span {
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 45px;
+  background: var(--g-lime);
+  color: var(--g-ink);
+  border-radius: 50%;
+  transition: transform .3s;
+}
+
+.gl7-primary-pill:hover > span {
+  transform: rotate(40deg);
+}
+
+.gl7-journal-hero-foot {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font: 800 9px var(--g-font);
+  margin-top: 15px;
+}
+
+.gl7-journal-hero-foot span {
+  padding: 7px 10px;
+  border: 1px solid #123d3660;
+  border-radius: 40px;
+}
+
+/* ===========================================
+   08 / SCULPTURAL TREATMENT PHOTOGRAPHY
+=========================================== */
+
+.gl7-journal-hero-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: var(--gl7-accent);
+  min-height: 580px;
+  overflow: hidden;
+}
+
+.gl7-journal-image {
+  position: absolute;
+  inset: 7% 11% 7% 8%;
+  overflow: hidden;
+
+  border-radius:
+    45% 55% 34% 66% /
+    27% 42% 58% 73%;
+
+  transform: rotate(7deg);
+  box-shadow: 25px 20px 0 #ffffff32;
+}
+
+/* DIFFERENT MASK FOR EACH SERVICE */
+
+.gl7-mood-mint .gl7-journal-image {
+  border-radius:
+    50% 40% 46% 52% /
+    22% 33% 61% 63%;
+
+  transform: rotate(-5deg);
+}
+
+.gl7-mood-citron .gl7-journal-image {
+  border-radius:
+    48% 52% 50% 50% /
+    45% 45% 55% 55%;
+
+  transform: rotate(3deg);
+}
+
+.gl7-mood-lilac .gl7-journal-image {
+  border-radius:
+    28% 52% 48% 45% /
+    52% 36% 57% 48%;
+
+  transform: rotate(-9deg);
+}
+
+.gl7-mood-violet .gl7-journal-image {
+  border-radius:
+    52% 24% 46% 38% /
+    30% 47% 43% 56%;
+
+  transform: rotate(9deg);
+}
+
+.gl7-mood-coral .gl7-journal-image {
+  border-radius:
+    44% 44% 27% 65% /
+    60% 28% 42% 47%;
+
+  transform: rotate(-7deg);
+}
+
+.gl7-journal-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.12);
+  transition: transform 1s var(--g-ease);
+}
+
+.gl7-journal-hero-media:hover img {
+  transform: scale(1.2);
+}
+
+.gl7-detail-glyph {
+  position: absolute;
+  right: -7%;
+  top: -15%;
+  width: 60%;
+  color: #f2f6cb;
+  animation: gl7-spin 70s linear infinite;
+}
+
+.gl7-journal-hero-no {
+  position: absolute;
+  left: 12px;
+  bottom: -48px;
+
+  font: 900 clamp(180px, 21vw, 340px)/1
+    var(--g-display);
+
+  letter-spacing: -.1em;
+  color: #ffffff8c;
+}
+
+.gl7-journal-hero-no small {
+  font: 700 16px var(--g-font);
+}
+
+.gl7-journal-media-note {
+  position: absolute;
+  bottom: 17px;
+  right: 18px;
+  font: 800 9px var(--g-font);
+  color: white;
+}
+
+/* ===========================================
+   09 / TREATMENT FACTS & JOURNAL CONTENT
+=========================================== */
+
+.gl7-journal-strip {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-block: 24px;
+  border-bottom: 1px solid var(--g-line);
+  font: 800 10px var(--g-font);
+}
+
+.gl7-journal-strip span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gl7-journal-body {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.15fr)
+    minmax(305px, .6fr);
+
+  gap: clamp(25px, 5vw, 80px);
+  padding-block: 105px;
+  align-items: start;
+}
+
+.gl7-journal-main {
+  min-width: 0;
+}
+
+.gl7-journal-main > section {
+  padding-block: 60px;
+  border-top: 1px solid var(--g-line);
+}
+
+.gl7-journal-main > section:first-child {
+  padding-top: 0;
+  border: 0;
+}
+
+.gl7-journal-main h2 {
+  font-size: clamp(56px, 6vw, 99px);
+  margin: 17px 0 27px;
+}
+
+.gl7-journal-main h2 em {
+  color: var(--gl7-accent);
+}
+
+.gl7-intro-chapter > p:first-of-type {
+  font: 600 clamp(20px, 2.3vw, 32px)/1.6
+    var(--g-font);
+
+  margin-bottom: 19px;
+}
+
+.gl7-intro-chapter > p:nth-of-type(2),
+.gl7-lead {
+  font: 500 13px/1.9 var(--g-font);
+  color: var(--g-muted);
+  max-width: 650px;
+}
+
+.gl7-intentions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 25px;
+}
+
+.gl7-intentions > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 800 10px var(--g-font);
+  border-radius: 100px;
+  padding: 11px 14px;
+  background: var(--gl7-tint);
+}
+
+/* ===========================================
+   10 / INTERACTIVE THREE-PART CARE JOURNEY
+=========================================== */
+
+.gl7-path-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 32px;
+}
+
+.gl7-path-tabs button {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 52px;
+
+  border: 1px solid var(--g-line);
+  background: transparent;
+  color: var(--g-ink);
+  border-radius: 60px;
+
+  font: 800 10px var(--g-font);
+}
+
+.gl7-path-tabs button span {
+  opacity: .6;
+}
+
+.gl7-path-tabs button.is-current {
+  background: var(--g-deep);
+  color: white;
+  border-color: var(--g-deep);
+}
+
+.gl7-path-panel {
+  margin-top: 13px;
+  background: var(--gl7-tint);
+
+  border-radius:
+    36px 100px 36px 36px;
+
+  padding: clamp(24px, 4vw, 46px);
+  display: grid;
+  gap: 30px;
+
+  animation: gl7-rise .35s var(--g-ease);
+}
+
+.gl7-path-panel > span {
+  font: 800 10px var(--g-font);
+  letter-spacing: .1em;
+}
+
+.gl7-path-panel h3 {
+  font-size: clamp(39px, 4.4vw, 70px);
+  font-weight: 800;
+}
+
+.gl7-path-panel h3 i {
+  color: var(--gl7-accent);
+}
+
+.gl7-path-panel p {
+  font: 500 13px/1.9 var(--g-font);
+  max-width: 550px;
+  margin-top: 17px;
+}
+
+.gl7-path-panel > button {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 0;
+  background: var(--g-deep);
+  color: white;
+
+  padding: 13px 17px;
+  border-radius: 60px;
+  font: 800 10px var(--g-font);
+}
+
+/* ===========================================
+   11 / CONSULTATION QUESTION JOURNAL
+=========================================== */
+
+.gl7-question-list {
+  display: grid;
+  margin-top: 22px;
+  border-top: 1px solid var(--g-line);
+}
+
+.gl7-question-list > div {
+  display: grid;
+  grid-template-columns:
+    27px 1fr 22px;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--g-line);
+}
+
+.gl7-question-list > div > span {
+  font: 800 10px var(--g-font);
+  color: var(--gl7-accent);
+}
+
+.gl7-question-list p {
+  font: 600 clamp(17px, 2vw, 26px)/1.45
+    var(--g-display);
+}
+
+.gl7-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid var(--g-deep);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--g-deep);
+
+  padding: 15px 18px;
+  margin-top: 25px;
+  font: 800 10px var(--g-font);
+}
+
+.gl7-copy-status {
+  margin-top: 12px !important;
+  font: 700 11px var(--g-font);
+}
+
+/* ===========================================
+   12 / INDIVIDUAL TREATMENT FAQs
+=========================================== */
+
+.gl7-faq-list {
+  border-top: 1px solid var(--g-line);
+}
+
+.gl7-faq-list details {
+  border-bottom: 1px solid var(--g-line);
+}
+
+.gl7-faq-list summary {
+  display: grid;
+  grid-template-columns:
+    26px 1fr 29px;
+  gap: 15px;
+  align-items: center;
+
+  padding: 19px 4px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.gl7-faq-list summary::-webkit-details-marker {
+  display: none;
+}
+
+.gl7-faq-list summary > span:first-child {
+  font: 800 10px var(--g-font);
+  color: var(--gl7-accent);
+}
+
+.gl7-faq-list summary strong {
+  font: 700 clamp(17px, 2vw, 26px)
+    var(--g-display);
+}
+
+.gl7-faq-plus {
+  display: grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  border: 1px solid;
+  border-radius: 50%;
+  transition: transform .3s;
+}
+
+.gl7-faq-list details[open] .gl7-faq-plus {
+  transform: rotate(45deg);
+}
+
+.gl7-faq-list details > p {
+  padding: 0 30px 23px 45px;
+  color: var(--g-muted);
+  font: 500 12px/1.9 var(--g-font);
+}
+
+/* ===========================================
+   13 / STICKY CONSULTATION PREVIEW
+=========================================== */
+
+.gl7-consultation-rail {
+  position: sticky;
+  top: 105px;
+  background: #e0eee1;
+
+  border: 1px solid var(--g-line);
+  border-radius: 35px;
+  overflow: hidden;
+
+  box-shadow:
+    15px 18px 0 #a9d1b728;
+}
+
+.gl7-rail-visual {
+  position: relative;
+  height: 230px;
+  overflow: hidden;
+}
+
+.gl7-rail-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gl7-rail-visual span {
+  position: absolute;
+  bottom: 13px;
+  left: 13px;
+  background: var(--g-lime);
+  padding: 10px 13px;
+  border-radius: 60px;
+  font: 800 9px var(--g-font);
+}
+
+.gl7-rail-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  padding: clamp(20px, 2.6vw, 33px);
+}
+
+.gl7-rail-inner h2 {
+  font-size: clamp(45px, 4.5vw, 68px);
+}
+
+.gl7-rail-inner h2 em {
+  color: #608d6f;
+}
+
+.gl7-rail-inner > p {
+  color: var(--g-muted);
+  font: 500 12px/1.85 var(--g-font);
+}
+
+.gl7-rail-service {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--g-line);
+}
+
+.gl7-rail-service span {
+  color: var(--g-muted);
+  font: 800 9px/1.5 var(--g-font);
+}
+
+.gl7-rail-service strong {
+  text-align: right;
+  font: 800 11px/1.5 var(--g-font);
+}
+
+.gl7-rail-inner .gl7-primary-pill {
+  justify-content: space-between;
+}
+
+.gl7-rail-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  font: 800 10px var(--g-font);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--g-deep);
+}
+
+.gl7-rail-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  padding: 15px;
+  background: #d3e5d5;
+  border-radius: 15px;
+}
+
+.gl7-rail-notice svg {
+  flex-shrink: 0;
+}
+
+.gl7-rail-notice p {
+  font: 600 10px/1.7 var(--g-font);
+}
+
+/* ===========================================
+   14 / RELATED TREATMENT COLLECTION
+=========================================== */
+
+.gl7-related {
+  background: #e0eacf;
+  padding-block: 95px;
+}
+
+.gl7-related-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 25px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.gl7-related h2 {
+  font-size: clamp(56px, 6.3vw, 95px);
+  margin-top: 14px;
+}
+
+.gl7-related h2 em {
+  color: #739b7d;
+}
+
+.gl7-related-heading > a {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border-bottom: 1px solid;
+  padding: 9px 0;
+  font: 800 10px var(--g-font);
+}
+
+.gl7-related-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.gl7-related-card {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.gl7-related-card > div {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1.25;
+  background: var(--gl7-tint);
+
+  border-radius:
+    32px 90px 24px 24px;
+}
+
+.gl7-related-card:nth-child(2) > div {
+  border-radius:
+    100px 23px 70px 23px;
+}
+
+.gl7-related-card:nth-child(3) > div {
+  border-radius:
+    28px 90px 28px 90px;
+}
+
+.gl7-related-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .8s var(--g-ease);
+}
+
+.gl7-related-card:hover img {
+  transform: scale(1.08);
+}
+
+.gl7-related-card > div span {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 9px;
+  border-radius: 50px;
+  background: var(--gl7-tint);
+  font: 800 9px var(--g-font);
+}
+
+.gl7-related-card small {
+  font: 800 9px var(--g-font);
+  color: var(--gl7-accent);
+}
+
+.gl7-related-card strong {
+  font: 800 clamp(23px, 2.8vw, 43px)/1.1
+    var(--g-display);
+
+  letter-spacing: -.05em;
+  padding-right: 26px;
+}
+
+.gl7-related-card > svg {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
+
+/* ===========================================
+   15 / JOURNAL DISCLOSURE & NOT FOUND
+=========================================== */
+
+.gl7-journal-end {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+
+  padding-block: 27px;
+
+  color: var(--g-muted);
+  font: 700 9px/1.8 var(--g-font);
+}
+
+.gl7-journal-end > span:first-child {
+  max-width: 500px;
+  display: flex;
+  align-items: start;
+  gap: 9px;
+}
+
+.gl7-journal-end > a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--g-ink);
+}
+
+.gl7-notfound {
+  min-height: 65vh;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 20px;
+}
+
+.gl7-notfound h1 {
+  font-size: clamp(60px, 8vw, 120px);
+}
+
+.gl7-notfound p {
+  color: var(--g-muted);
+}
+
+.gl7-notfound a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  background: var(--g-deep);
+  color: white;
+
+  padding: 14px 17px;
+  border-radius: 100px;
+  font: 800 10px var(--g-font);
+}
+
+/* ===========================================
+   16 / RESPONSIVE — SMALL LAPTOP
+=========================================== */
+
+@media (max-width: 1180px) {
+  .gl7-service-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .gl7-filter-bottom {
+    grid-template-columns:
+      1.2fr 1fr 1fr;
+  }
+
+  .gl7-reset {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  .gl7-journal-body {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(270px, .65fr);
+
+    gap: 25px;
+  }
+
+  .gl7-journal-hero h1 {
+    font-size: clamp(67px, 7vw, 105px);
+  }
+}
+
+/* ===========================================
+   17 / RESPONSIVE — TABLET
+=========================================== */
+
+@media (max-width: 900px) {
+  .gl7-atlas-hero,
+  .gl7-journal-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .gl7-atlas-hero h1 {
+    margin-right: 0;
+  }
+
+  .gl7-atlas-hero-media {
+    min-height: 430px;
+  }
+
+  .gl7-explorer-heading,
+  .gl7-atlas-end {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .gl7-journal-hero-media {
+    min-height: 450px;
+  }
+
+  .gl7-journal-body {
+    grid-template-columns: 1fr;
+  }
+
+  .gl7-consultation-rail {
+    position: static;
+    max-width: 720px;
+  }
+
+  .gl7-atlas-finder-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .gl7-atlas-finder-inner > div:first-child {
+    padding: 70px 0 0;
+  }
+
+  .gl7-finder-art {
+    min-height: 280px;
+  }
+}
+
+/* ===========================================
+   18 / RESPONSIVE — MOBILE
+=========================================== */
+
+@media (max-width: 650px) {
+  .gl7-wrap {
+    width: calc(100% - 34px);
+  }
+
+  .gl7-atlas-hero-copy {
+    padding: 40px 20px 44px;
+  }
+
+  .gl7-atlas-meta {
+    font-size: 8px;
+  }
+
+  .gl7-atlas-hero h1 {
+    font-size: clamp(
+      76px,
+      16vw,
+      118px
+    );
+  }
+
+  .gl7-atlas-hero-media {
+    min-height: 330px;
+  }
+
+  .gl7-atlas-hero-mask {
+    inset: 9% 10%;
+  }
+
+  .gl7-explorer {
+    padding-block: 75px;
+  }
+
+  .gl7-explorer-heading h2 {
+    font-size: clamp(
+      53px,
+      11vw,
+      83px
+    );
+  }
+
+  .gl7-filter-shell {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .gl7-filter-top {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .gl7-filter-cats {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .gl7-filter-cats button {
+    flex-shrink: 0;
+  }
+
+  .gl7-filter-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .gl7-reset {
+    grid-column: auto;
+    width: 100%;
+  }
+
+  .gl7-results-line {
+    font-size: 9px;
+  }
+
+  .gl7-service-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .gl7-card-media {
+    aspect-ratio: 1.05;
+  }
+
+  .gl7-card-body h3 {
+    font-size: clamp(
+      35px,
+      10vw,
+      55px
+    );
+  }
+
+  .gl7-atlas-finder h2 {
+    font-size: clamp(
+      55px,
+      11vw,
+      80px
+    );
+  }
+
+  .gl7-atlas-end {
+    padding-block: 80px;
+  }
+
+  .gl7-atlas-end h2 {
+    font-size: clamp(
+      54px,
+      11vw,
+      83px
+    );
+  }
+
+  /* RESPONSIVE COMPARISON DOCK */
+
+  .gl7-compare-dock {
+    border-radius: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px;
+    bottom: 8px;
+  }
+
+  .gl7-compare-dock > div {
+    flex-basis: 100%;
+  }
+
+  .gl7-compare-open {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .gl7-compare-modal {
+    padding: 22px 15px;
+  }
+
+  /* TREATMENT JOURNAL MOBILE */
+
+  .gl7-journal-hero-copy {
+    padding: 45px 20px;
+  }
+
+  .gl7-journal-hero h1 {
+    font-size: clamp(
+      59px,
+      12vw,
+      86px
+    );
+  }
+
+  .gl7-journal-hero-media {
+    min-height: 345px;
+  }
+
+  .gl7-journal-image {
+    inset: 8% 13%;
+  }
+
+  .gl7-journal-hero-no {
+    font-size: 180px;
+    bottom: -22px;
+  }
+
+  .gl7-journal-body {
+    padding-block: 65px;
+  }
+
+  .gl7-journal-main h2 {
+    font-size: clamp(
+      53px,
+      11vw,
+      82px
+    );
+  }
+
+  .gl7-journal-main > section {
+    padding-block: 48px;
+  }
+
+  .gl7-path-tabs button {
+    font-size: 9px;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .gl7-path-panel {
+    border-radius:
+      25px 70px 25px 25px;
+  }
+
+  .gl7-related {
+    padding-block: 70px;
+  }
+
+  .gl7-related-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gl7-related-card > div {
+    aspect-ratio: 1.4;
+  }
+
+  .gl7-related-card strong {
+    font-size: 38px;
+  }
+}
+
+/* ===========================================
+   19 / RESPONSIVE — COMPACT PHONES
+=========================================== */
+
+@media (max-width: 375px) {
+  .gl7-atlas-hero h1 {
+    font-size: 65px;
+  }
+
+  .gl7-journal-hero h1 {
+    font-size: 53px;
+  }
+
+  .gl7-journal-main h2 {
+    font-size: 51px;
+  }
+
+  .gl7-card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gl7-card-actions :is(a, button) {
+    justify-content: center;
+  }
+}
+
+/* ===========================================
+   20 / ACCESSIBILITY
+=========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .gl7 *,
+  .gl7 *::before,
+  .gl7 *::after,
+  .gl7-compare-overlay * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

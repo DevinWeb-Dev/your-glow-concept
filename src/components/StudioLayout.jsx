@@ -28,6 +28,7 @@ Database,
 
 import "../styles/studio.css";
 import "../styles/intelligence.css";
+import "../styles/glow-staff-rose-restore.css";
 
 const LINKS = [
   {

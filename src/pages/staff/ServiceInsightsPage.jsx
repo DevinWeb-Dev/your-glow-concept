@@ -3,17 +3,16 @@ import { Link, useOutletContext } from "react-router-dom";
 
 import {
   ArrowRight,
-  ChartPie,
+  ArrowUpRight,
+  ChartNoAxesColumn,
   Clock3,
-  Filter,
-  Heart,
-  Layers,
+  Layers3,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
 import {
-  SERVICES,
+  CATEGORIES,
   formatPeso,
 } from "../../data/studioData.js";
 
@@ -25,31 +24,48 @@ import {
   percentage,
 } from "../../utils/studioInsights.js";
 
-const STATUS_OPTIONS = [
-  { id: "requested", label: "Active Requests" },
-  { id: "all", label: "All Requests" },
-  { id: "cancelled", label: "Cancelled Requests" },
+import "../../styles/glow-batch6-final.css";
+
+const STATUS = [
+  {
+    id: "requested",
+    label: "Requested only",
+  },
+  {
+    id: "all",
+    label: "All statuses",
+  },
+  {
+    id: "cancelled",
+    label: "Cancelled only",
+  },
 ];
 
 export default function ServiceInsightsPage() {
-  const { bookings } = useOutletContext();
+  const { bookings = [] } = useOutletContext();
 
   const [period, setPeriod] = useState("all");
   const [status, setStatus] = useState("requested");
+  const [category, setCategory] = useState("All");
 
   const scoped = useMemo(() => {
-    const periodData = filterPeriod(bookings, period);
+    const dates = filterPeriod(bookings, period);
 
     return status === "all"
-      ? periodData
-      : periodData.filter(
+      ? dates
+      : dates.filter(
           (item) => item.status === status
         );
   }, [bookings, period, status]);
 
   const services = useMemo(
-    () => serviceInsights(scoped),
-    [scoped]
+    () =>
+      serviceInsights(scoped).filter(
+        (item) =>
+          category === "All" ||
+          item.category === category
+      ),
+    [scoped, category]
   );
 
   const categories = useMemo(
@@ -57,57 +73,68 @@ export default function ServiceInsightsPage() {
     [scoped]
   );
 
-  const leadingService =
-    services.find((item) => item.total > 0);
+  const total = services.reduce(
+    (sum, item) => sum + item.total,
+    0
+  );
 
-  const highestService = Math.max(
+  const leading = services.find(
+    (item) => item.total > 0
+  );
+
+  const peak = Math.max(
     1,
     ...services.map((item) => item.total)
   );
 
-  const highestCategory = Math.max(
-    1,
-    ...categories.map((item) => item.count)
-  );
-
-  const usedCategories = categories.filter(
-    (item) => item.count > 0
+  const used = services.filter(
+    (item) => item.total > 0
   ).length;
 
   return (
-    <div className="ygs-page ygi-page">
-      <div className="ygs-page-heading">
+    <main className="g6 g6-insights">
+      <header className="g6-hero g6-hero--soft">
         <div>
-          <span className="ygs-eyebrow">
-            STUDIO INTELLIGENCE / SERVICE INTEREST
+          <span className="g6-kicker">
+            STUDIO INTELLIGENCE / 02 — CARE INTEREST
           </span>
 
           <h1>
-            Discover the
-            <br />
-            <em>treatment story.</em>
+            Six stories. <em>Many beginnings.</em>
           </h1>
 
           <p>
-            Explore how fictional visitors
-            select services in the consultation
-            scheduling experience.
+            Understand which fictional treatment
+            topics are selected most often.
+            These are booking interests, not
+            treatment success or patient outcomes.
           </p>
+
+          <div className="g6-hero-actions">
+            <Link to="/staff/reports">
+              FULL REPORTS
+              <ArrowUpRight size={17} />
+            </Link>
+
+            <Link to="/staff/services">
+              SERVICE CATALOG
+              <ArrowRight size={17} />
+            </Link>
+          </div>
         </div>
 
-        <Link
-          to="/staff/reports"
-          className="ygs-primary-button"
+        <div
+          className="g6-hero-art"
+          aria-hidden="true"
         >
-          <ChartPie size={18} />
-          View Full Reports
-          <ArrowRight size={17} />
-        </Link>
-      </div>
+          <span>06</span>
+          <small>THE SERVICE STUDIES</small>
+        </div>
+      </header>
 
-      <div className="ygi-filter-bar">
+      <div className="g6-toolbar g6-toolbar--triple">
         <label>
-          <span>APPOINTMENT PERIOD</span>
+          APPOINTMENT WINDOW
 
           <select
             value={period}
@@ -127,7 +154,7 @@ export default function ServiceInsightsPage() {
         </label>
 
         <label>
-          <span>REQUEST STATUS</span>
+          REQUEST STATUS
 
           <select
             value={status}
@@ -135,10 +162,10 @@ export default function ServiceInsightsPage() {
               setStatus(event.target.value)
             }
           >
-            {STATUS_OPTIONS.map((item) => (
+            {STATUS.map((item) => (
               <option
-                key={item.id}
                 value={item.id}
+                key={item.id}
               >
                 {item.label}
               </option>
@@ -146,223 +173,247 @@ export default function ServiceInsightsPage() {
           </select>
         </label>
 
-        <span className="ygi-filter-count">
-          <Filter size={17} />
+        <label>
+          SERVICE CATEGORY
 
-          {scoped.length} matching demo requests
-        </span>
+          <select
+            value={category}
+            onChange={(event) =>
+              setCategory(event.target.value)
+            }
+          >
+            {CATEGORIES.map((item) => (
+              <option key={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
-      <div className="ygi-insights-hero">
-        <div className="ygi-insights-feature">
-          <span className="ygs-eyebrow">
-            TOP SERVICE INTEREST
+      <div className="g6-insight-feature">
+        <div className="g6-insight-lead">
+          <span className="g6-kicker">
+            01 / MOST-SELECTED TOPIC
           </span>
 
-          <Sparkles
-            className="ygi-feature-sparkle"
-            size={36}
-            strokeWidth={1.2}
-          />
+          <Sparkles size={29} />
 
           <h2>
-            {leadingService
-              ? leadingService.name
-              : "Your story begins here"}
+            {leading?.name ||
+              "The next conversation"}
             <em>.</em>
           </h2>
 
           <p>
-            {leadingService
-              ? `${leadingService.total} matching demo consultation requests for this service.`
-              : "Create a fictional consultation request to explore studio service trends."}
+            {leading
+              ? `${leading.total} matching fictional request${
+                  leading.total === 1 ? "" : "s"
+                } in the current view.`
+              : "No matching sample requests yet. Try another time window, status or category."}
           </p>
 
-          <div className="ygi-feature-foot">
-            <Heart size={19} />
-
-            Thoughtful data. No invented results.
-          </div>
+          <Link
+            to={
+              leading
+                ? `/treatments/${leading.id}`
+                : "/treatments"
+            }
+          >
+            VIEW PUBLIC JOURNAL
+            <ArrowUpRight size={17} />
+          </Link>
         </div>
 
-        <div className="ygi-insights-summary">
-          <article>
-            <Layers size={23} />
+        <div className="g6-insight-numbers">
+          <span>
+            THE SELECTED VIEW
+          </span>
 
-            <strong>{SERVICES.length}</strong>
+          <strong>
+            {String(total).padStart(2, "0")}
+          </strong>
 
-            <span>Sample service types</span>
-          </article>
+          <p>
+            matching request records
+          </p>
 
-          <article>
-            <ChartPie size={23} />
+          <div>
+            <span>
+              INTERESTED SERVICE TOPICS
+            </span>
 
-            <strong>{scoped.length}</strong>
+            <b>
+              {used} / {services.length}
+            </b>
+          </div>
 
-            <span>Matching consultation requests</span>
-          </article>
+          <div>
+            <span>
+              AVAILABLE SERVICE CATEGORIES
+            </span>
 
-          <article>
-            <Sparkles size={23} />
-
-            <strong>{usedCategories}</strong>
-
-            <span>Service categories requested</span>
-          </article>
+            <b>
+              {
+                categories.filter(
+                  (item) => item.count > 0
+                ).length
+              }{" "}
+              / {categories.length}
+            </b>
+          </div>
         </div>
       </div>
 
-      <section className="ygs-panel ygi-section">
-        <div className="ygs-panel-heading">
+      <section className="g6-panel">
+        <div className="g6-panel-head">
           <div>
-            <span className="ygs-eyebrow">
-              SERVICE COMPARISON
+            <span className="g6-kicker">
+              02 / THE SIX-SERVICE INDEX
             </span>
 
             <h2>
-              What visitors <em>explore.</em>
+              In the <em>details.</em>
             </h2>
           </div>
 
-          <span className="ygs-panel-tag">
-            {scoped.length} REQUESTS
-          </span>
+          <ChartNoAxesColumn size={27} />
         </div>
 
-        <div className="ygi-service-grid">
-          {services.map((service, index) => (
-            <article
-              className="ygi-service-card"
-              key={service.id}
-            >
-              <div className="ygi-service-photo">
+        <div className="g6-service-list">
+          {services.map((item, index) => (
+            <article key={item.id}>
+              <div className="g6-service-photo">
                 <img
-                  src={service.image}
-                  alt={`Illustrative imagery for ${service.name}`}
+                  src={item.image}
+                  alt=""
                   loading="lazy"
                 />
 
-                <span>
-                  RANK {String(index + 1).padStart(2, "0")}
-                </span>
+                <span>0{index + 1}</span>
               </div>
 
-              <div className="ygi-service-body">
-                <span className="ygs-eyebrow">
-                  {service.category}
-                </span>
+              <div className="g6-service-details">
+                <small>
+                  {item.category.toUpperCase()}
+                </small>
 
-                <h3>{service.name}</h3>
+                <h3>{item.name}</h3>
 
-                <div className="ygi-service-count">
-                  <strong>{service.total}</strong>
-                  <span>
-                    matching
-                    <br />
-                    demo requests
-                  </span>
-                </div>
+                <p>
+                  <Clock3 size={14} />
+                  {item.duration} MIN · FROM{" "}
+                  {formatPeso(item.price)}{" "}
+                  (ILLUSTRATIVE)
+                </p>
 
-                <div className="ygi-demand-track">
+                <div className="g6-progress">
                   <span
                     style={{
                       width: `${
-                        (service.total /
-                          highestService) * 100
+                        (item.total / peak) * 100
                       }%`,
                     }}
                   />
                 </div>
+              </div>
 
-                <div className="ygi-service-details">
-                  <span>
-                    <Clock3 size={15} />
-                    {service.duration} min
-                  </span>
+              <div className="g6-service-volume">
+                <strong>{item.total}</strong>
 
-                  <strong>
-                    From {formatPeso(service.price)}*
-                  </strong>
-                </div>
+                <span>
+                  {percentage(
+                    item.total,
+                    total
+                  )}
+                  % OF VIEW
+                </span>
+
+                <Link
+                  to={`/treatments/${item.id}`}
+                  aria-label={`Open ${item.name} journal`}
+                >
+                  <ArrowUpRight size={19} />
+                </Link>
               </div>
             </article>
           ))}
         </div>
 
-        <p className="ygs-panel-footnote">
-          *Prices are illustrative only. No
-          transactions or actual service delivery
-          are tracked in this portfolio prototype.
+        <p className="g6-caption">
+          A service's count includes only
+          records that match your current
+          date and status filters.
+          Displayed fees are portfolio
+          examples, not booked revenue.
         </p>
       </section>
 
-      <section className="ygs-panel ygi-section">
-        <div className="ygs-panel-heading">
+      <section className="g6-panel">
+        <div className="g6-panel-head">
           <div>
-            <span className="ygs-eyebrow">
-              DISTRIBUTION BY SERVICE CATEGORY
+            <span className="g6-kicker">
+              03 / CATEGORIES
             </span>
 
             <h2>
-              Different kinds of <em>interest.</em>
+              A wider <em>view.</em>
             </h2>
           </div>
 
-          <ChartPie size={26} color="#B78B83" />
+          <Layers3 size={27} />
         </div>
 
-        <div className="ygi-category-grid">
-          {categories.map((category) => (
-            <article
-              key={category.name}
-              className="ygi-category-card"
-            >
-              <div className="ygi-category-top">
-                <div>
-                  <strong>{category.name}</strong>
+        <div className="g6-category-grid">
+          {categories.map((item, index) => (
+            <article key={item.name}>
+              <span>
+                0{index + 1} / CATEGORY
+              </span>
 
-                  <small>
-                    {percentage(
-                      category.count,
-                      scoped.length
-                    )}% of matching requests
-                  </small>
-                </div>
+              <strong>
+                {item.name}
+              </strong>
 
-                <span>{category.count}</span>
-              </div>
-
-              <div className="ygi-demand-track">
+              <div className="g6-progress">
                 <span
                   style={{
                     width: `${
-                      (category.count /
-                        highestCategory) * 100
+                      percentage(
+                        item.count,
+                        Math.max(
+                          1,
+                          scoped.length
+                        )
+                      )
                     }%`,
                   }}
                 />
               </div>
+
+              <small>
+                {item.count} matching
+                demo entries
+              </small>
             </article>
           ))}
         </div>
+
+        <p className="g6-caption">
+          Categories above reflect your
+          date and status filters. The
+          category selector only filters
+          the service list above.
+        </p>
       </section>
 
-      <div className="ygs-information">
-        <ShieldCheck size={23} />
-
-        <div>
-          <strong>
-            This is a service discovery report.
-          </strong>
-
-          <p>
-            A requested consultation does not
-            indicate a diagnosis, treatment
-            recommendation, completed procedure,
-            or satisfactory result.
-          </p>
-        </div>
-      </div>
-    </div>
+      <p className="g6-notice">
+        <ShieldCheck size={18} />
+        This demo is not a skin analysis
+        or medical analytics platform.
+        No personal health information
+        is processed.
+      </p>
+    </main>
   );
 }
